@@ -387,7 +387,11 @@ const REGIONS=[
 ];
 const HAN={교주:'交州'};REGIONS.forEach(r=>HAN[r.id]=r.han);
 const SURN=['조','유','손','장','왕','이','진','양','황','마','하','주','한','정','위','곽','서','오','허','등','염','전','노','방'];
-const GIV=['평','량','기','화','달','규','안','휘','상','윤','성','도','용','초','진','방','충','의','통','소','영','흥','겸','패','엄','표'];
+const GIV=['평','량','규','휘','윤','흥','겸','패','엄','표','랑','굉','준','욱','순','연','습','범','옹','훈','탁','숭','흠','간','릉','봉','섭','앙','웅','찬','곤','람','렴','륭','밀','완','첨','칙','태','훤','흡','혁'];
+/* 낱말처럼 읽히거나 실존 인물과 겹치는 이름은 피한다 */
+const NAMEBAN=new Set('조준 조연 조간 유연 유순 유랑 유훈 유흥 유표 유엄 장엄 장표 장간 이윤 이랑 이간 이완 이순 이엄 이평 진흥 진태 진규 진범 진평 마찬 마량 마태 주량 주연 주범 주간 주태 주준 주흠 한량 한숭 한순 정평 정량 정규 정순 정욱 정봉 정태 위엄 위범 위탁 위태 위연 위욱 서량 서간 서훈 오탁 오찬 오범 전표 전범 전람 전훈 노랑 노숭 방랑 방습 방범 황태 황완 양평 양표 양봉 양준 양습 왕평 왕랑 왕준 왕찬 왕릉 왕숭 손윤 손랑 손준 손욱 손섭 곽준 곽태 허윤 허훈 허연 등표 등훈 등윤 하랑 하평 마준 마윤 염표'.split(' '));
+function given(sur){for(let i=0;i<40;i++){const g=pick(GIV);if(!NAMEBAN.has(sur+g))return g;}return '평';}
+function mkName(){const sn=pick(SURN);return sn+given(sn);}
 const ZI1=['자','중','백','숙','원','문','공','덕','현','경','계','장'];
 const ZI2=['명','룡','덕','달','화','휴','강','연','순','공','명','량','승','칙'];
 const KIDN=['평','흥','소','안','영','강','수','통','의','관','희','선','유','준','홍'];
@@ -803,7 +807,7 @@ function registerHTML(){
   const note='<div class="rn">손오 시대 행정 죽간 주마루 오간(走馬樓吳簡)의 호적 양식을 본떴습니다.</div>';
   if(P.status==='유민'){P.fam={fa:{n:'이름 모를 아버지',b:P.year-rint(20,40),alive:1},mo:{n:'어머니',b:P.year-rint(17,35),alive:1}};giveJob(P.fam.fa,P.fam.mo);return `<div class="reg"><div class="rh">${head}</div><div class="rr"><span class="r1">기록</span><span>없음. 떠도는 유민의 자식으로 길 위에서 태어났다.</span><span></span></div>${note}</div>`;}
   const vil=pick(['평안','상','동','남양','소무','길양','신성','광성','의화','부평'])+'리';
-  const fa=P.surname+pick(GIV),fAge=rint(19,45),mo=pick(SURN),mAge=Math.max(16,fAge-rint(0,8));P.fam={fa:{n:fa,b:P.year-fAge,alive:1},mo:{n:mo+'씨',b:P.year-mAge,alive:1}};giveJob(P.fam.fa,P.fam.mo);
+  const fa=P.surname+given(P.surname),fAge=rint(19,45),mo=pick(SURN),mAge=Math.max(16,fAge-rint(0,8));P.fam={fa:{n:fa,b:P.year-fAge,alive:1},mo:{n:mo+'씨',b:P.year-mAge,alive:1}};giveJob(P.fam.fa,P.fam.mo);
   const jue={'명문 사족':'관내후','지방 호족':'오대부','아전':'공승','한실 종친':'종실'}[P.status]||pick(['공승','공사','상조','사오']);
   const sick=R()<.25?' · '+pick(['발이 부음(腫足)','한쪽 눈이 멂(盲目)','손에 형벌 흔적(刑手)']):'';
   const row=(a,b,c,me)=>`<div class="rr${me?' me':''}"><span class="r1">${a}</span><span>${b}</span><span>${c}</span></div>`;
@@ -818,15 +822,30 @@ const PATHN={민:'백성',군:'군문',관:'관직',적:'도적',상:'상인'};
 const RANKS={군:['병졸','오장','십장','둔장','군사마','교위','중랑장','편장군','장군','대장군'],
              관:['서리','현리','현승','현령','군승','태수','자사','구경','상서령','승상'],
              적:['졸개','두목','소수','거수']};
-const TH={군:[0,6,13,21,31,43,57,74,95,120],관:[0,8,18,30,44,62,80,100,125,160],적:[0,10,24,42]};
+const TH={군:[0,8,18,32,50,82,124,176,238,310],관:[0,10,24,42,66,104,156,220,294,380],적:[0,10,24,42]};
 /* 태수·교위 이상은 명성이 차도 해마다 이 확률로만 자리가 난다. 승상·대장군은 주군과의 인연도 필요 */
-const SEATP={군:{5:.3,6:.15,7:.1,8:.06,9:.3},관:{3:.45,4:.35,5:.12,6:.1,7:.08,8:.05,9:.3}};
+const SEATP={군:{3:.6,4:.4,5:.22,6:.1,7:.07,8:.05,9:.12},관:{2:.6,3:.35,4:.28,5:.07,6:.05,7:.04,8:.03,9:.1}};
 const POP=[[150,5650],[157,5648],[184,5500],[190,4600],[195,3600],[200,2600],[208,2000],[220,1400],[234,1100],[263,767],[280,1616],[300,1700]];
 const WORLD={184:'장각이 태평도를 일으켰다. 황건의 난.',189:'영제가 붕어하고 동탁이 낙양에 들어왔다.',190:'관동의 제후들이 동탁 토벌을 외치며 일어섰다.',
   192:'동탁이 여포의 손에 죽었다.',196:'조조가 헌제를 허도로 맞아들였다.',200:'관도에서 조조가 원소를 꺾었다.',207:'유비가 융중의 초려를 세 번 찾았다.',
   208:'적벽에서 조조의 대군이 불탔다.',214:'유비가 익주를 차지했다.',219:'관우가 형주를 잃고 맥성에서 죽었다.',220:'조조가 죽고 조비가 제위를 넘겨받았다. 한나라가 끝났다.',
   221:'유비가 성도에서 황제에 올랐다.',222:'이릉에서 육손이 촉군의 영채를 불태웠다.',223:'유비가 백제성에서 세상을 떠났다.',229:'손권이 황제를 칭했다. 세 나라가 솥발처럼 섰다.',
   234:'제갈량이 오장원에서 숨을 거두었다.',249:'사마의가 고평릉에서 정변을 일으켰다.',263:'촉한이 멸망했다.',265:'사마염이 위를 대신해 진(晉)을 세웠다.',280:'오가 항복했다. 천하가 진으로 하나가 되었다.'};
+const NEWS={166:['당고의 화. 청류 선비 이백여 명이 옥에 갇혔다.'],168:['영제가 열두 살에 즉위했다. 환관들이 대장군 두무와 태부 진번을 죽였다.'],169:['두 번째 당고의 화. 이응과 범방이 옥에서 죽었다.'],
+ 178:['조정이 서원에서 벼슬을 팔기 시작했다. 이천석 자리가 이천만 전이라 한다.'],185:['낙양 남궁에 큰불이 났다. 조정이 밭 한 이랑마다 열 전씩 세금을 더 걷는다.','흑산의 도적 백만이 하북을 휩쓴다.'],
+ 187:['장순과 장거가 오환과 손잡고 유주에서 난을 일으켰다.'],188:['조정이 자사를 주목으로 바꾸었다. 유언이 익주목이 되어 촉으로 들어갔다.'],
+ 191:['손견이 양인에서 화웅을 베고 낙양에 들어갔다.','원소가 한복에게서 기주를 빼앗았다.'],193:['조조가 아버지의 원수를 갚는다며 서주를 쳤다.','공손찬이 유주목 유우를 죽였다.'],
+ 194:['도겸이 죽고 유비가 서주를 맡았다.','익주목 유언이 죽고 아들 유장이 뒤를 이었다.'],195:['손책이 강을 건너 유요를 쳤다.','천자가 장안을 벗어나 동쪽으로 떠났다.'],
+ 197:['원술이 수춘에서 황제를 칭했다.','장수가 완성에서 조조를 기습해 전위와 조앙이 죽었다.'],198:['조조가 하비를 물에 잠기게 하여 여포를 사로잡아 죽였다.'],
+ 199:['공손찬이 역경에서 스스로 불타 죽었다.','원술이 피를 토하고 죽었다.'],201:['유비가 조조에게 쫓겨 형주의 유표에게 몸을 맡겼다.'],202:['원소가 병으로 죽었다. 아들들이 뒤를 다툰다.'],
+ 204:['조조가 업성을 함락했다.'],205:['조조가 원담을 베고 기주와 청주를 평정했다.'],209:['유비가 형주 남쪽 네 군을 차지했다.'],210:['주유가 서른여섯에 파구에서 병으로 죽었다.','조조가 업에 동작대를 세웠다.'],
+ 211:['조조가 동관에서 마초와 한수를 깨뜨렸다.','유비가 유장의 청으로 익주에 들어갔다.'],212:['순욱이 수춘에서 죽었다. 빈 찬합을 받았다는 소문이 돈다.'],213:['조조가 위공이 되어 구석을 받았다.'],
+ 215:['장료가 합비에서 팔백 명으로 손권의 십만을 물리쳤다.','장로가 조조에게 항복해 한중이 넘어갔다.'],216:['조조가 위왕이 되었다.'],217:['노숙이 죽고 여몽이 뒤를 이었다.'],
+ 218:['허도에서 경기와 위황이 조조를 치려다 실패했다.'],224:['조비가 광릉까지 내려왔다가 장강을 보고 탄식하며 돌아갔다.'],225:['제갈량이 남중을 평정했다.'],226:['위 문제 조비가 죽고 조예가 뒤를 이었다.'],
+ 227:['제갈량이 출사표를 올리고 한중으로 나아갔다.'],228:['마속이 가정에서 패해 제갈량의 첫 북벌이 꺾였다.','육손이 석정에서 조휴를 크게 깨뜨렸다.'],230:['손권이 바다 건너 이주로 군사를 보냈다.'],
+ 231:['제갈량이 기산으로 나아가 사마의와 맞섰다. 장합이 목문에서 화살에 맞아 죽었다.'],238:['사마의가 요동의 공손연을 멸했다.'],239:['위 명제 조예가 죽었다. 여덟 살 조방이 즉위했다.'],
+ 244:['조상이 촉을 치려다 낙곡에서 크게 패했다.'],251:['사마의가 죽었다.'],252:['손권이 죽었다. 제갈각이 동흥에서 위군을 깨뜨렸다.'],253:['제갈각이 연회 자리에서 죽임을 당했다.'],
+ 255:['관구검과 문흠이 수춘에서 난을 일으켰다. 사마사가 진압하고 곧 죽었다.'],258:['제갈탄이 수춘에서 죽었다.'],260:['위 황제 조모가 사마소를 치러 나섰다가 칼에 찔려 죽었다.'],264:['종회와 강유가 성도에서 죽었다. 등애도 죽임을 당했다.']};
 const ERA_HAN=[[150,'화평'],[151,'원가'],[153,'영흥'],[155,'영수'],[158,'연희'],[167,'영강'],[168,'건녕'],[172,'희평'],[178,'광화'],[184,'중평'],[190,'초평'],[194,'흥평'],[196,'건안']];
 const ERA_WEI=[[220,'황초'],[227,'태화'],[233,'청룡'],[237,'경초'],[240,'정시'],[249,'가평'],[254,'정원'],[256,'감로'],[260,'경원'],[264,'함희'],[266,'태시'],[275,'함녕'],[280,'태강']];
 const ERA_SHU=[[221,'장무'],[223,'건흥'],[238,'연희'],[258,'경요']];
@@ -864,14 +883,15 @@ function ruler(r,y){
   if(r==='익주'&&y>=263)f='위';
   return f;
 }
+const FRONTIER={유주:['오환','선비'],병주:['흉노','선비'],량주:['강족','저족'],양주:['산월'],익주:['남만','저족'],형주:['무릉만'],청주:['해적'],서주:['해적']};
 function enemyOf(){
-  const f=ruler(),y=P.year;
   if(P.path==='적') return '관군';
-  const M={한:['황건 잔당','흑산적','강족 반란군'],동탁:['관동 연합군'],이각:['곽사','관동 제후'],공손찬:['원소','오환'],원소:['공손찬','흑산적','조조'],
-    원술:['손견','조조','유표'],도겸:['조조'],유비:['조조','여포','원술'],여포:['조조','유비','원술'],마등:['한수','강족'],유표:['손책','장수'],
-    손책:['유요','왕랑','산월'],손권:['황조','조조','산월'],유장:P.year<211?['장로','남중 이민족']:['장로','유비'],위:['촉','오'],촉:['위','남만'],오:['위','산월'],진:['오']};
-  if(f==='조조') return pick(y<200?['여포','원술','장수','원소']:y<210?['원소의 잔당','오환','유표']:['마초','손권','관우']);
-  return pick(M[f]||['도적떼']);
+  const me=ruler(),y=P.year,G=GUNMAP[P.gun];
+  if(y<190)return pick(y>=184&&y<=188?['황건 잔당','황건 잔당','흑산적']:(FRONTIER[P.region]||[]).concat(['도적']));
+  if(G){const near=GUN.map(x=>[x,(x[2]-G[2])**2+(x[3]-G[3])**2]).sort((a,b)=>a[1]-b[1]).slice(1,14).map(x=>rulerG(x[0],y))
+      .filter(f=>f!==me&&f!=='한'&&!(famOf(f)===famOf(me)&&famOf(f)!=='oth'));
+    if(near.length&&R()<.8)return pick(near);}
+  return pick((FRONTIER[P.region]||[]).concat(['도적','반란']));
 }
 function era(){
   const y=P.year,f=ruler();let L=ERA_HAN;
@@ -886,15 +906,20 @@ function pop(){
 }
 const inR=(...r)=>r.includes(P.region);
 function title(){
-  if(P.path==='민') return P.wealth<5?'유민':P.wealth<15?'빈농':P.wealth<50?'농민':P.wealth>=500?'대지주':P.fame>25?'향촌의 유지':'부농';
+  if(P.path==='민') return P.wealth<5?'유민':P.wealth<15?'빈농':P.wealth<50?'농민':P.wealth>=500?'대지주':P.fame>25?'향촌 유지':'부농';
   if(P.path==='상') return P.wealth<40?'행상':P.wealth<150?'상인':P.wealth<1000?'거상':P.wealth<10000?'대상(大商)':'천하의 거부';
   return RANKS[P.path][P.rank];
 }
+function facTitle(f,path,t,region){
+  if(path==='민'||path==='상')return `${region}의 ${t}`;
+  if(f==='한')return (path==='군'?'관군 ':'한나라 ')+t;
+  return `${f}의 ${t}`;
+}
 function fullTitle(){
   if(P.path==='적') return (P.flags.yellow?'황건 ':'산적 ')+title();
-  return ruler()+'의 '+title();
+  return facTitle(ruler(),P.path,title(),P.region);
 }
-function setPath(p){ if(P.path!==p){P.path=p;P.rank=0;} if(P.npcs)ensureMentor(p); }
+function setPath(p){ if(P.path!==p){P.path=p;P.rank=0;P.fame=Math.round(P.fame*.5);if(P.fc)P.fc.work=0;} if(P.npcs)ensureMentor(p); }
 function moveTo(r){P.region=r;const g=gunsOf(r);if(g.length){P.gun=pick(g)[0];P.county=P.gun;}return r;}
 function moveRandom(){return moveTo(pick(REGIONS.filter(x=>x.id!==P.region)).id);}
 function hurt(n,cause){if((P.traits||[]).includes('의술')&&/열병|역병/.test(cause))n=Math.round(n/2);P.hp-=n;if(P.hp<=0){P.hp=0;P.deathCause=cause;}}
@@ -920,7 +945,7 @@ const EV=[
  ch:[{l:'서당에서 글을 배운다',act:()=>{const rich=P.wealth>=12;P.s.지+=rich?8:5;P.s.정+=rich?3:1;if(rich){P.wealth-=2;return '훈장에게 육포 한 묶음을 예물로 바치고 『효경』을 떼었다.'}return '학비가 없어 서당 창밖에서 어깨너머로 글을 익혔다.'}},
      {l:'마을 무예 사범을 따라다닌다',act:()=>{P.s.무+=8;return '목검을 휘두르다 손바닥이 다 터졌다. 그래도 신이 났다.'}},
      {l:'부모님 일을 돕는다',act:()=>{P.s.매+=6;P.wealth+=4;return '새벽마다 꼴을 베고 장에 따라다녔다. 동네 어른들이 효성스럽다고 칭찬했다.'}},
-     {l:'동네 아이들 대장 노릇을 한다',act:()=>{P.s.통+=8;const n=pick(SURN)+pick(GIV);later('f1_child_pal',rint(8,11),{n});return `골목 전쟁놀이에서 한 번도 진 적이 없었다. 늘 졸병을 맡던 ${jo(n,'이/가')} 당신을 졸졸 따라다녔다.`}}],
+     {l:'동네 아이들 대장 노릇을 한다',act:()=>{P.s.통+=8;const n=mkName();later('f1_child_pal',rint(8,11),{n});return `골목 전쟁놀이에서 한 번도 진 적이 없었다. 늘 졸병을 맡던 ${jo(n,'이/가')} 당신을 졸졸 따라다녔다.`}}],
  to:()=>'개울에서 가재를 잡고 놀다 보니 계절이 지나갔다.'},
 {id:'teen',prio:1,when:()=>P.age>=15&&P.age<=18,time:10,title:'갈림길',han:'岐',hr:'기',
  text:()=>`열다섯이 넘었다. ${P.status} 집안의 자식으로서 앞날을 정해야 한다.`,
@@ -975,7 +1000,7 @@ const EV=[
  to:()=>{hurt(60,'서주 대학살');return '도망칠 곳이 없었다.'}},
 {id:'famine',prio:1,when:()=>inR(...NORTH_F)&&P.year>=194&&P.year<=195&&P.age>=10,time:7,title:'메뚜기와 기근',han:'饑',hr:'기',
  text:()=>'메뚜기 떼가 하늘을 덮었다. 곡식 한 섬에 오십만 전. 길가에 쓰러진 사람을 아무도 돌아보지 않는다.',
- ch:[{l:'남은 곡식을 이웃과 나눈다',act:()=>{if(P.wealth<15)hurt(18,'굶주림');P.wealth=Math.max(0,P.wealth-15);P.s.매+=5;P.fame+=5;kind(pick(SURN)+pick(GIV),'흉년에 당신이 곡식을 나눠 준 집의 아이');return '함께 굶주렸지만, 이웃들은 당신 이름을 기억했다.'}},
+ ch:[{l:'남은 곡식을 이웃과 나눈다',act:()=>{if(P.wealth<15)hurt(18,'굶주림');P.wealth=Math.max(0,P.wealth-15);P.s.매+=5;P.fame+=5;kind(mkName(),'흉년에 당신이 곡식을 나눠 준 집의 아이');return '함께 굶주렸지만, 이웃들은 당신 이름을 기억했다.'}},
      {l:'곡식을 숨기고 버틴다',act:()=>{P.wealth=Math.max(0,P.wealth-5);hurt(10,'굶주림');return '문을 걸어 잠그고 겨울을 넘겼다. 이웃의 곡소리를 못 들은 척했다.'}},
      {l:'부잣집 창고를 턴다',st:'무',d:45,act:ok=>{if(ok){P.wealth+=20;P.s.매-=4;if(P.path==='민')setPath('적');later('f1_famine_thief',rint(3,6),{n:pick(SURN)});return '쌀가마를 지고 산으로 달아났다. 돌아갈 수 없게 되었다.'}hurt(40,'창고지기의 몽둥이');return '창고지기들에게 붙잡혀 실컷 두들겨 맞았다.'}}],
  to:()=>{hurt(25,'굶주림');return '풀뿌리와 나무껍질로 버텼다.'}},
@@ -1021,7 +1046,7 @@ const EV=[
 {id:'plague',prio:1,when:()=>P.year===217,time:7,title:'정유년 대역병',han:'疫',hr:'역',
  text:()=>'집집마다 곡소리가 들린다. 건안칠자 가운데 서간, 진림, 응창, 유정이 이 역병에 쓰러졌다고 한다.',
  ch:[{l:'문을 걸어 잠그고 버틴다',p:.75,act:ok=>{P.wealth=Math.max(0,P.wealth-2);if(ok)return '한 해를 집 안에서만 보냈다. 밭은 잡초에 묻혔다.';hurt(45,'역병');return '문틈으로도 역병은 들어왔다.'}},
-     {l:'앓는 이웃을 돌본다',p:.5,act:ok=>{P.s.매+=8;P.fame+=6;kind(pick(SURN)+pick(GIV),'역병 때 당신이 돌봐 준 이웃');if(ok)return '이웃들이 당신을 은인이라 불렀다.';hurt(50,'역병');return '이웃은 살았지만 병이 당신에게 옮았다.'}},
+     {l:'앓는 이웃을 돌본다',p:.5,act:ok=>{P.s.매+=8;P.fame+=6;kind(mkName(),'역병 때 당신이 돌봐 준 이웃');if(ok)return '이웃들이 당신을 은인이라 불렀다.';hurt(50,'역병');return '이웃은 살았지만 병이 당신에게 옮았다.'}},
      {l:'의원을 데려온다',req:()=>P.wealth>=20,rq:'2만 전 필요',p:.9,act:ok=>{P.wealth-=15;if(ok)return '비싼 약값을 치르고 온 식구가 살았다.';hurt(40,'역병');return '약도 듣지 않았다.'}}],
  to:()=>{if(R()<.5){hurt(45,'역병');return '손쓸 틈도 없이 열이 올랐다.'}return '운 좋게 비켜 갔다.'}},
 {id:'jingzhou',prio:1,when:()=>P.year===219&&inR('형주')&&P.age>=12,time:7,title:'흰옷의 상인들',han:'白',hr:'백',
@@ -1078,7 +1103,7 @@ const EV=[
      {l:'아직은 때가 아니다',act:()=>{P.s.매-=1;return '중매쟁이가 혀를 차며 돌아갔다. 혼기를 놓친다는 수군거림이 돌았다.'}}],
  to:()=>'답을 미루는 사이 혼담이 흐지부지되었다.'},
 {id:'baby',when:()=>false,time:6,title:'첫울음',han:'子',
- text:()=>{const sex=R()<.5?'m':'f';P.tmp.sex=sex;P.tmp.names=[];const used=(P.kids||[]).map(k=>k.n.slice(P.surname.length));let pool=(sex==='m'?KIDN:KIDN_F).filter(x=>!used.includes(x));if(pool.length<3)pool=(sex==='m'?KIDN:KIDN_F).slice();for(let i=0;i<3;i++)P.tmp.names.push(pool.splice(Math.floor(R()*pool.length),1)[0]);return `${(P.kids||[]).length?'또 ':''}${sex==='m'?'아들':'딸'}이 태어났다. 이름을 지어야 한다.`},
+ text:()=>{const sex=R()<.5?'m':'f';P.tmp.sex=sex;P.tmp.names=[];const used=(P.kids||[]).map(k=>k.n.slice(P.surname.length));const all=sex==='m'?GIV.filter(g=>!NAMEBAN.has(P.surname+g)):KIDN_F;let pool=all.filter(x=>!used.includes(x));if(pool.length<3)pool=all.slice();for(let i=0;i<3;i++)P.tmp.names.push(pool.splice(Math.floor(R()*pool.length),1)[0]);return `${(P.kids||[]).length?'또 ':''}${sex==='m'?'아들':'딸'}이 태어났다. 이름을 지어야 한다.`},
  ch:[0,1,2].map(i=>({l:()=>P.surname+P.tmp.names[i],act:()=>{const n=P.surname+P.tmp.names[i];addKid(n,P.tmp.sex);return `${n}. 좋은 이름이다.`}})),
  to:()=>{addKid(P.surname+(P.tmp.sex==='m'?'아무개':'아기'),P.tmp.sex);return '이름을 못 정하는 사이, 동네에서 아이를 아무개라 부르기 시작했다.'}},
 {id:'sick',w:2,when:()=>P.age>=10,time:6,title:'열병',han:'病',hr:'병',
@@ -1089,10 +1114,10 @@ const EV=[
  to:()=>{hurt(30,'열병');return '정신이 오락가락했다.'}},
 {id:'xiaolian',w:3,once:1,when:()=>P.year<220&&['민','상'].includes(P.path)&&P.age>=18&&(P.s.매>=55||P.s.정>=58||P.s.지>=62)&&P.fame>=4,time:7,title:'효렴 천거',han:'擧',hr:'거',
  text:()=>'군 태수가 당신을 효렴으로 천거하겠다고 한다. 군에서 해마다 몇 명 올리지 못하는 자리다.',
- ch:[{l:'받아들인다',act:()=>{setPath('관');P.rank=1;P.fame+=5;later('f1_xiaolian_patron',rint(3,6),{n:(P.gov&&P.gov.n)||(pick(SURN)+pick(GIV))});return '도성으로 올라가 낭관이 되었다. 천거해 준 태수에게는 평생 고리(故吏)의 예를 갖춰야 한다.'}},
+ ch:[{l:'받아들인다',act:()=>{setPath('관');P.rank=1;P.fame+=5;later('f1_xiaolian_patron',rint(3,6),{n:(P.gov&&P.gov.n)||(mkName())});return '도성으로 올라가 낭관이 되었다. 천거해 준 태수에게는 평생 고리(故吏)의 예를 갖춰야 한다.'}},
      {l:'세 번 사양한다',p:.5,act:ok=>{P.s.매+=4;P.fame+=5;if(ok){setPath('관');P.rank=2;return '겸양이 높이 평가되어 더 좋은 자리로 다시 불렸다.'}return '정말로 다른 이에게 넘어갔다. 이름만 남았다.'}}],
  to:()=>'기회는 다른 이에게 돌아갔다.'},
-{id:'battle',w:7,when:()=>P.path==='군'&&P.year>=184&&P.rank<2,time:6,title:'접전',han:'戰',hr:'전',
+{id:'battle',w:7,when:()=>P.path==='군'&&P.year>=184&&P.rank<4,time:6,title:'접전',han:'戰',hr:'전',
  text:()=>{P.tmp.enemy=enemyOf();return `${P.tmp.enemy}의 군세와 맞닥뜨렸다. 북소리가 땅을 울린다.`},
  ch:[{l:'선봉에 선다',st:'무',d:55,act:ok=>{if(ok){P.fame+=10;P.wealth+=5;return '적진을 가장 먼저 뚫었다. 공을 적는 장부 맨 위에 이름이 올랐다.'}hurt(45,`${P.tmp.enemy}의 창`);return '적의 창이 갑옷을 뚫었다.'}},
      {l:'대열을 지킨다',st:'통',d:40,act:ok=>{if(ok){P.fame+=4;return '방패를 맞대고 끝까지 버텼다.'}hurt(25,`${P.tmp.enemy}의 화살`);return '화살이 어깨에 박혔다.'}},
@@ -1113,11 +1138,11 @@ const EV=[
 {id:'caught',w:4,when:()=>P.path==='관'&&P.flags.corrupt,time:6,title:'발각',han:'罪',hr:'죄',
  text:()=>'자사의 종사가 내려왔다. 고쳐 쓴 장부가 그의 손에 들려 있다.',
  ch:[{l:'종사에게 뇌물을 쓴다',req:()=>P.wealth>=30,rq:'3만 전 필요',act:()=>{P.wealth-=30;P.flags.corrupt=0;return '종사는 장부를 불에 던졌다.'}},
-     {l:'동료에게 뒤집어씌운다',st:'지',d:55,act:ok=>{P.flags.corrupt=0;if(ok){const n=pick(SURN)+pick(GIV);P.s.매-=6;later('f1_caught_son',rint(3,6),{n});return `동료 ${jo(n,'이/가')} 끌려갔다. 당신은 무사했다.`}die('참수');return '거짓이 드러났다. 저잣거리에서 목이 베였다.'}},
+     {l:'동료에게 뒤집어씌운다',st:'지',d:55,act:ok=>{P.flags.corrupt=0;if(ok){const n=mkName();P.s.매-=6;later('f1_caught_son',rint(3,6),{n});return `동료 ${jo(n,'이/가')} 끌려갔다. 당신은 무사했다.`}die('참수');return '거짓이 드러났다. 저잣거리에서 목이 베였다.'}},
      {l:'죄를 자백한다',act:()=>{P.flags.corrupt=0;P.wealth=Math.floor(P.wealth*.3);setPath('민');P.s.매+=3;return '관직과 재산을 잃고 고향으로 돌아갔다.'}}],
  to:()=>{P.flags.corrupt=0;hurt(55,'옥사');setPath('민');return '변명할 틈도 없이 옥에 갇혔다.'}},
 {id:'lawsuit',w:3,when:()=>P.path==='관'&&P.rank>=1,time:7,title:'송사',han:'訟',hr:'송',
- text:()=>{P.tmp.farmer=pick(SURN)+pick(GIV);return `권세가 집안이 가난한 농부 ${P.tmp.farmer}의 땅을 빼앗았다는 송사가 들어왔다. 권세가의 하인이 돈 꾸러미를 들고 기다린다.`},
+ text:()=>{P.tmp.farmer=mkName();return `권세가 집안이 가난한 농부 ${P.tmp.farmer}의 땅을 빼앗았다는 송사가 들어왔다. 권세가의 하인이 돈 꾸러미를 들고 기다린다.`},
  ch:[{l:'법대로 판결한다',st:'정',d:45,act:ok=>{if(ok){P.fame+=7;P.s.매+=2;return '농부가 땅을 돌려받았다. 고을 사람들이 칭송했다.'}P.fame+=2;hurt(15,'권세가의 보복');return '판결은 했지만 밤길에 몽둥이를 맞았다.'}},
      {l:'뇌물을 받는다',act:()=>{P.wealth+=15;P.s.매-=4;later('f1_lawsuit_farmer',rint(3,6),{n:P.tmp.farmer});return '농부는 울며 돌아갔다.'}},
      {l:'양쪽을 달래 화해시킨다',st:'정',d:45,act:ok=>{if(ok){P.fame+=4;P.wealth+=4;return '농부는 땅값 일부를, 당신은 사례를 받았다.'}P.fame=Math.max(0,P.fame-2);return '양쪽 모두 불만이었다. 우유부단하다는 평이 돌았다.'}}],
@@ -1130,7 +1155,7 @@ const EV=[
  to:()=>{hurt(30,'민란');return '성난 군중이 관아 문을 부수고 들어왔다.'}},
 {id:'trade',w:()=>P.path==='상'?6:1,when:()=>(P.path==='상'||P.wealth>=30)&&P.age>=16&&P.path!=='적',time:7,title:'비단 소문',han:'商',hr:'상',
  text:()=>{P.tmp.dest=pick(REGIONS.filter(x=>x.id!==P.region)).id;return `${P.tmp.dest}에 비단을 실어 가면 세 배를 받는다는 소문이 돈다. 길은 험하다.`},
- ch:[{l:'전 재산을 건다',st:'정',d:50,act:ok=>{if(P.path==='민')setPath('상');if(ok){P.wealth=Math.floor(P.wealth*1.8)+10;P.fame+=3;const n=pick(SURN)+pick(GIV);later('f1_trade_partner',rint(1,3),{dest:P.tmp.dest,n});return `${P.tmp.dest}에서 비단을 다 팔아 큰돈을 쥐었다. 그곳 상인 ${jo(n,'이/가')} 다음에도 거래하자며 손을 내밀었다.`}P.wealth=Math.floor(P.wealth*.3);return '도중에 수레가 털렸다.'}},
+ ch:[{l:'전 재산을 건다',st:'정',d:50,act:ok=>{if(P.path==='민')setPath('상');if(ok){P.wealth=Math.floor(P.wealth*1.8)+10;P.fame+=3;const n=mkName();later('f1_trade_partner',rint(1,3),{dest:P.tmp.dest,n});return `${P.tmp.dest}에서 비단을 다 팔아 큰돈을 쥐었다. 그곳 상인 ${jo(n,'이/가')} 다음에도 거래하자며 손을 내밀었다.`}P.wealth=Math.floor(P.wealth*.3);return '도중에 수레가 털렸다.'}},
      {l:'절반만 건다',st:'정',d:40,act:ok=>{if(ok){P.wealth=Math.floor(P.wealth*1.3)+4;return '쏠쏠하게 남겼다.'}P.wealth=Math.floor(P.wealth*.7);return '도착해 보니 시세가 떨어져 있었다.'}},
      {l:'흘려듣는다',act:()=>{P.s.지+=1;return '소문을 좇은 이웃은 돌아오지 않았다. 그 빈집을 보며 셈을 다시 했다.'}}],
  to:()=>'수레를 구하는 사이 소문이 식었다.'},
@@ -1153,7 +1178,7 @@ const EV=[
      {l:'고향을 지킨다',act:()=>{P.s.매+=1;return '조상의 무덤을 두고 갈 수는 없었다. 텅 빈 이웃집 밭까지 맡아 갈았다.'}}],
  to:()=>'떠날 때를 놓쳤다.'},
 {id:'friend',w:1,when:()=>P.age>=18&&P.wealth>=10,time:6,title:'옛 벗',han:'友',hr:'우',
- text:()=>{P.tmp.fr=pick(SURN)+pick(GIV);return `어릴 적 벗 ${jo(P.tmp.fr,'이/가')} 찾아와 큰돈을 빌려 달라고 한다. 무엇에 쓸지는 말을 흐린다.`},
+ text:()=>{P.tmp.fr=mkName();return `어릴 적 벗 ${jo(P.tmp.fr,'이/가')} 찾아와 큰돈을 빌려 달라고 한다. 무엇에 쓸지는 말을 흐린다.`},
  ch:[{l:'달라는 만큼 빌려준다',act:()=>{const v=Math.floor(P.wealth*.4);P.wealth-=v;later('f1_friend_return',rint(2,5),{n:P.tmp.fr,v,lent:1});return `${money(v)}을 내주었다. ${jo(P.tmp.fr,'은/는')} 몇 번이나 고개를 숙이고 떠났다.`}},
      {l:'절반만 빌려준다',act:()=>{const v=Math.floor(P.wealth*.2);P.wealth-=v;later('f1_friend_return',rint(2,5),{n:P.tmp.fr,v,lent:1});return `${money(v)}을 내주었다. 벗은 아쉬운 얼굴로 받아 갔다.`}},
      {l:'거절한다',act:()=>{later('f1_friend_return',rint(2,5),{n:P.tmp.fr,v:0,lent:0});return `${jo(P.tmp.fr,'은/는')} 말없이 돌아섰다.`}}],
@@ -1177,8 +1202,8 @@ const EV=[
      {l:'함께 박수를 친다',act:()=>{P.s.매+=1;return '이야기는 사실보다 빨리 퍼졌다. 사람들은 오래도록 관우가 화웅을 벤 줄 알았다.'}},
      {l:'이야기꾼에게 동전을 던져 준다',act:()=>{P.wealth=Math.max(0,P.wealth-1);P.s.매+=2;return '이야기꾼이 당신을 향해 크게 절했다. 다음 대목은 당신 마을 이야기라고 했다.'}}],
  to:()=>'이야기꾼은 벌써 다음 대목으로 넘어갔다.'},
-{id:'field',w:9,when:()=>P.path==='군'&&P.rank>=2&&P.year>=184,time:7,title:'출진',han:'陣',hr:'진',
- text:()=>{const A=Math.round((300+P.rank*rint(300,700))/10)*10,E=Math.round(A*(.6+R()*1.2)/10)*10;
+{id:'field',w:9,when:()=>P.path==='군'&&P.rank>=4&&P.year>=184,time:7,title:'출진',han:'陣',hr:'진',
+ text:()=>{const A=Math.round([0,0,0,0,600,1500,3500,6000,12000,30000][P.rank]*(.7+R()*.6)/10)*10,E=Math.round(A*(.6+R()*1.2)/10)*10;
    P.tmp.bt={A,E,enemy:enemyOf(),ter:pick(TERR),fs:{통:rint(40,85),무:rint(40,85),지:rint(40,85)}};
    return `${P.tmp.bt.enemy}의 군세가 다가온다. 그대가 이끄는 병력은 ${A.toLocaleString()}명.`;},
  ch:[{l:'출진하여 맞선다',vs:()=>battleCfg(P.tmp.bt),after:r=>{const b=P.tmp.bt,kill=Math.round(b.E-r.foe),lost=Math.round(b.A-r.me);
@@ -1201,8 +1226,8 @@ const EV=[
  to:()=>{P.fame=Math.max(0,P.fame-3);return '아무도 나서지 못했다. 적장은 웃으며 돌아갔다.'}},
 {id:'debate',w:4,cd:4,when:()=>P.age>=18&&(P.path==='관'||(P.path!=='적'&&Math.max(P.s.지,P.s.정)>=60)),time:7,title:'설전',han:'舌',hr:'설',
  text:()=>{const ds=DEBATERS.filter(d=>d.r.includes(P.region)&&P.year>=d.y[0]&&P.year<=d.y[1]);
-   P.tmp.foe=ds.length&&R()<.6?Object.assign({st:rint(78,92)},pick(ds)):{n:`명사 ${pick(SURN)}${pick(GIV)}`,st:rint(45,80),line:'그대의 말에는 근본이 없소.'};
-   return `연회 자리에서 ${P.tmp.foe.n}이(가) 그대의 의견을 정면으로 반박하고 나섰다. 좌중의 시선이 모였다.`;},
+   P.tmp.foe=ds.length&&R()<.6?Object.assign({st:rint(78,92)},pick(ds)):{n:`명사 ${mkName()}`,st:rint(45,80),line:'그대의 말에는 근본이 없소.'};
+   return `연회 자리에서 ${jo(P.tmp.foe.n,'이/가')} 그대의 의견을 정면으로 반박하고 나섰다. 좌중의 시선이 모였다.`;},
  ch:[{l:'설전에 응한다',vs:()=>debateCfg(P.tmp.foe),after:r=>{if(r.win){P.fame+=8;P.s.정+=1;P.s.지+=1;return `${jo(P.tmp.foe.n,'이/가')} 끝내 할 말을 잃었다. 그대의 언변이 고을에 퍼졌다.`}
        if(r.draw){P.fame+=2;return '팽팽했다. 좌중은 둘 다 대단하다고 했다.'}P.fame=Math.max(0,P.fame-3);P.s.매-=1;return '말문이 막혀 얼굴이 붉어졌다.'}},
      {l:'웃으며 술잔을 권한다',st:'매',d:50,act:ok=>{if(ok){P.fame+=2;return '좌중이 웃음을 터뜨렸다. 싸움은 없던 일이 되었다.'}P.fame=Math.max(0,P.fame-2);return '피한다는 수군거림이 들렸다.'}},
@@ -1215,7 +1240,7 @@ const EV=[
  to:()=>'추대는 다른 노인에게 돌아갔다.'},
 {id:'hermit',w:5,once:1,when:()=>['민','상'].includes(P.path)&&P.age>=40&&P.s.지>=68&&P.fame>=12,time:8,title:'은거',han:'隱',hr:'은',
  text:()=>'벼슬을 권하는 사람이 끊이지 않는다. 그러나 초가에서 책을 읽는 삶이 좋다.',
- ch:[{l:'초야에 남아 제자를 기른다',act:()=>{hon('은거 명사',1/20000);P.fame+=8;const n=pick(SURN)+pick(GIV);later('f1_hermit_pupil',rint(3,6),{n});return `사마휘처럼 제자들이 문 앞에 줄을 섰다. 그중 ${jo(n,'이/가')} 가장 영리했다.`}},
+ ch:[{l:'초야에 남아 제자를 기른다',act:()=>{hon('은거 명사',1/20000);P.fame+=8;const n=mkName();later('f1_hermit_pupil',rint(3,6),{n});return `사마휘처럼 제자들이 문 앞에 줄을 섰다. 그중 ${jo(n,'이/가')} 가장 영리했다.`}},
      {l:'끝내 출사한다',act:()=>{setPath('관');P.rank=Math.max(P.rank,3);P.fame+=4;return '늦은 나이에 현령으로 나갔다.'}}],
  to:()=>'답을 미루는 사이 또 한 해가 갔다.'},
 {id:'healer',w:6,once:1,when:()=>(P.traits||[]).includes('의술')&&P.age>=30&&P.fame>=6&&P.path!=='적',time:8,title:'의원의 길',han:'藥',hr:'약',
@@ -1231,7 +1256,7 @@ const EV=[
  to:()=>'재물은 쌓이기만 했다.'},
 {id:'xia',w:6,once:1,when:()=>P.flags.xia&&P.fame>=20&&P.s.무>=60&&P.path!=='관',time:7,title:'협명',han:'俠',hr:'협',
  text:()=>'의리를 지키고 약자를 돕는다는 소문에 천하의 협객들이 당신을 찾아온다.',
- ch:[{l:'협객들의 맹주가 된다',st:'매',d:55,act:ok=>{if(ok){hon('천하의 협객',1/30000);P.fame+=8;later('f1_xia_revenge',rint(1,3),{n:pick(SURN)+pick(GIV)});return '"그의 한마디는 천금보다 무겁다"는 말이 돌았다.'}P.fame=Math.max(0,P.fame-2);return '따르는 이는 몇 되지 않았다. 오히려 허세라는 말을 들었다.'}},
+ ch:[{l:'협객들의 맹주가 된다',st:'매',d:55,act:ok=>{if(ok){hon('천하의 협객',1/30000);P.fame+=8;later('f1_xia_revenge',rint(1,3),{n:mkName()});return '"그의 한마디는 천금보다 무겁다"는 말이 돌았다.'}P.fame=Math.max(0,P.fame-2);return '따르는 이는 몇 되지 않았다. 오히려 허세라는 말을 들었다.'}},
      {l:'조용히 칼을 거둔다',act:()=>{P.s.정+=2;return '칼을 벽에 걸었다. 찾아오는 이들에게는 밥만 먹여 보냈다.'}}],
  to:()=>'찾아온 이들은 실망하고 돌아갔다.'},
 {id:'bandit_surrender',w:9,once:1,when:()=>P.path==='적'&&P.rank>=2&&P.year>=185,time:8,title:'귀순 권유',han:'招',hr:'초',
@@ -1316,13 +1341,13 @@ const EV=[
      {l:'형편이 안 된다며 거절한다',act:()=>{const n=P.tmp.n;n.bond=Math.max(0,n.bond-2);later('f2_need_sold',rint(1,3),{n:n.n});return `${jo(n.n,'이/가')} 말없이 돌아섰다.`}}],
  to:()=>{P.tmp.n.bond=Math.max(0,P.tmp.n.bond-1);return '대답을 못 하는 사이 동무가 떠났다.'}},
 {id:'stranger',w:3,cd:6,when:()=>P.age>=16&&P.path!=='적',time:6,title:'길가의 사람',han:'仁',hr:'인',
- text:()=>{const war=P.gun&&gunState(P.gun,P.year).war;P.tmp.st={n:pick(SURN)+pick(GIV),what:war?'다친 병사':'굶주린 아이'};return `길가에 ${jo(P.tmp.st.what,'이/가')} 쓰러져 있다. 숨이 가쁘다.`},
+ text:()=>{const war=P.gun&&gunState(P.gun,P.year).war;P.tmp.st={n:mkName(),what:war?'다친 병사':'굶주린 아이'};return `길가에 ${jo(P.tmp.st.what,'이/가')} 쓰러져 있다. 숨이 가쁘다.`},
  ch:[{l:'업고 가서 돌본다',act:()=>{const s=P.tmp.st;P.wealth=Math.max(0,P.wealth-3);P.s.매+=2;kind(s.n,`당신이 길에서 살려 준 ${s.what}`);return `며칠을 먹이고 재웠다. 기운을 차린 그는 떠나면서 이름을 일러 주었다. ${s.n}.`}},
      {l:'죽 한 그릇만 먹이고 간다',act:()=>{P.wealth=Math.max(0,P.wealth-1);P.s.매+=1;return '죽을 떠먹여 주고 길을 재촉했다. 뒷일은 알 수 없다.'}},
      {l:'지나친다',act:()=>{P.s.매-=1;return '못 본 척 지나쳤다. 며칠 뒤 그 자리에 거적이 덮여 있었다.'}}],
  to:()=>'머뭇거리는 사이 누군가 먼저 데려갔다.'},
 {id:'repay',w:7,cd:5,when:()=>(P.kind||[]).some(k=>!k.repaid&&P.year-k.y>=5),time:8,title:'은혜 갚음',han:'恩',hr:'은',
- text:()=>{const k=P.kind.find(k=>!k.repaid&&P.year-k.y>=5);k.repaid=1;P.tmp.k=k;return `${k.y}년에 ${k.what} ${jo(k.n,'이/가')} 찾아왔다.`},
+ text:()=>{const k=P.kind.find(k=>!k.repaid&&P.year-k.y>=5);k.repaid=1;P.tmp.k=k;return `${k.what} ${jo(k.n,'이/가')} 찾아왔다. ${P.year-k.y}년 전의 일이다.`},
  say:()=>[P.tmp.k.n,'그날의 은혜를 하루도 잊은 적이 없습니다.'],
  ch:[{l:'반갑게 맞는다',act:()=>{const k=P.tmp.k;
        if(P.hp<50){P.hp=Math.min(maxHp(),P.hp+35);return `${jo(k.n,'이/가')} 귀한 약재를 가져왔다. 몸이 한결 나아졌다.`}
@@ -1333,7 +1358,7 @@ const EV=[
 {id:'gov_greedy',w:5,cd:4,when:()=>P.gov&&P.gov.trait==='탐욕'&&['민','상'].includes(P.path)&&P.age>=16,time:7,title:'탐관',han:'貪',hr:'탐',
  text:()=>`태수 ${jo(P.gov.n,'이/가')} 없던 세금을 만들어 걷는다. 이웃 몇 집은 벌써 밤에 도망쳤다.`,
  ch:[{l:'달라는 대로 바친다',act:()=>{const c=Math.max(2,Math.round(P.wealth*.15));P.wealth-=c;later('f2_greedy_riot',rint(1,2),{g:P.gov.n});return `${money(c)}을 뜯겼다. 이것으로 끝나지 않으리라는 것을 다들 알았다.`}},
-     {l:'자사에게 고발장을 올린다',st:'정',d:55,act:ok=>{if(ok){const g=P.gov.n;P.gov={n:pick(SURN)+pick(GIV),trait:'청렴',since:P.year,term:rint(5,9)};P.fame+=8;later('f2_greedy_kin',rint(3,5),{g});return '태수가 파면되고 청렴한 새 태수가 왔다. 고을 사람들이 당신을 칭송했다.'}hurt(25,'태수의 보복');return '고발장이 태수 손에 들어갔다. 곤장을 맞았다.'}},
+     {l:'자사에게 고발장을 올린다',st:'정',d:55,act:ok=>{if(ok){const g=P.gov.n;P.gov={n:mkName(),trait:'청렴',since:P.year,term:rint(5,9)};P.fame+=8;later('f2_greedy_kin',rint(3,5),{g});return '태수가 파면되고 청렴한 새 태수가 왔다. 고을 사람들이 당신을 칭송했다.'}hurt(25,'태수의 보복');return '고발장이 태수 손에 들어갔다. 곤장을 맞았다.'}},
      {l:'고향을 떠난다',act:()=>{P.wealth=Math.floor(P.wealth*.7);const r=moveRandom();return `헐값에 밭을 넘기고 ${jo(r,'로')} 떠났다.`}}],
  to:()=>{const c=Math.max(2,Math.round(P.wealth*.2));P.wealth-=c;return `대답이 늦다며 ${money(c)}을 뜯겼다.`}},
 {id:'s_spring',season:0,w:4,cd:3,when:()=>['민','적'].includes(P.path)&&P.wealth<25&&P.age>=12,time:6,title:'춘궁기',han:'春',hr:'춘',
@@ -1390,7 +1415,7 @@ const EV=[
 {id:'m_study',when:()=>false,time:8,title:'글 읽는 사람',han:'書',hr:'서',
  text:()=>'세 해 동안 책을 놓지 않았다. 고을 선비들 사이에서 당신 이름이 오르내린다.',
  ch:[{l:'낙양의 태학에 간다',req:()=>P.wealth>=10&&P.year<220,rq:'1만 전과 한 조정이 있어야',act:()=>{P.wealth-=10;P.s.지+=3;later('m_study_exam',2,{});return '책 상자를 지고 태학에 들어갔다.'}},
-     {l:'고을에 글방을 연다',act:()=>{P.s.매+=2;P.fame+=5;P.wealth+=3;later('m_study_pupil',rint(6,10),{n:pick(SURN)+pick(GIV)});return '아이들이 하나둘 글을 배우러 왔다.'}},
+     {l:'고을에 글방을 연다',act:()=>{P.s.매+=2;P.fame+=5;P.wealth+=3;later('m_study_pupil',rint(6,10),{n:mkName()});return '아이들이 하나둘 글을 배우러 왔다.'}},
      {l:'이름난 명사에게 인물평을 청한다',st:'매',d:55,act:ok=>{if(ok){P.fame+=10;return '"난세를 다스릴 인재"라는 평을 받았다. 고을이 떠들썩했다.'}P.fame=Math.max(0,P.fame-3);return '"책만 읽은 샌님"이라는 평을 받았다.'}}],
  to:()=>'책장만 넘기다 한 해가 갔다.'},
 {id:'m_study_exam',when:()=>false,time:8,title:'태학의 시험',han:'試',hr:'시',
@@ -1413,7 +1438,7 @@ const EV=[
 {id:'m_social',when:()=>false,time:8,title:'모여드는 사람들',han:'結',hr:'결',
  text:()=>{const f=(P.npcs||[]).find(n=>n.alive&&n.role==='동무');P.tmp.fr=f;return `교유가 넓어져 집에 호걸들이 모여든다.${f?` 동무 ${f.n}도 왔다.`:''} 다들 술잔을 들고 의형제를 맺자고 한다.`},
  ch:[{l:'의형제를 맺는다',act:()=>{P.flags.sworn=1;if(P.tmp.fr)P.tmp.fr.bond=5;P.fame+=6;later('m_social_sworn',rint(3,7),{});return '하늘에 맹세했다. "한날한시에 죽기를 바란다."'}},
-     {l:'식객을 거둔다',req:()=>P.wealth>=15,rq:'1만 5천 전 필요',act:()=>{P.wealth-=10;P.fame+=8;later('m_social_guest',rint(2,5),{n:pick(SURN)+pick(GIV)});return '식객 수십 명이 집을 드나들었다.'}},
+     {l:'식객을 거둔다',req:()=>P.wealth>=15,rq:'1만 5천 전 필요',act:()=>{P.wealth-=10;P.fame+=8;later('m_social_guest',rint(2,5),{n:mkName()});return '식객 수십 명이 집을 드나들었다.'}},
      {l:'모임을 줄인다',act:()=>{P.wealth+=3;return '조용히 지내기로 했다.'}}],
  to:()=>'술자리는 밤늦게 흩어졌다.'},
 {id:'m_social_sworn',when:()=>false,time:8,title:'의형제의 맹세',han:'盟',hr:'맹',
@@ -1431,7 +1456,7 @@ const EV=[
  to:()=>'식객은 말을 꺼내지 못하고 물러났다.'},
 {id:'m_social2',when:()=>false,time:7,title:'고을의 여론',han:'論',hr:'론',
  text:()=>'고을의 크고 작은 일이 당신의 한마디로 정해진다. 태수도 당신의 눈치를 본다.',
- ch:[{l:'여론을 모아 태수를 갈아 치운다',st:'정',d:55,act:ok=>{if(ok){P.gov={n:pick(SURN)+pick(GIV),trait:'청렴',since:P.year,term:rint(5,9)};hon('고을의 여론을 움직인 사람',1/20000);P.fame+=10;return '고을 사람들의 상소로 태수가 바뀌었다.'}hurt(15,'태수의 보복');return '태수의 미움을 샀다.'}},
+ ch:[{l:'여론을 모아 태수를 갈아 치운다',st:'정',d:55,act:ok=>{if(ok){P.gov={n:mkName(),trait:'청렴',since:P.year,term:rint(5,9)};hon('고을의 여론을 움직인 사람',1/20000);P.fame+=10;return '고을 사람들의 상소로 태수가 바뀌었다.'}hurt(15,'태수의 보복');return '태수의 미움을 샀다.'}},
      {l:'다툼을 중재하며 덕을 쌓는다',act:()=>{P.s.매+=3;P.fame+=6;hon('고을의 어른',1/5000);return '사람들이 당신을 어른이라 불렀다.'}}],
  to:()=>'이번에는 나서지 않았다.'},
 {id:'m_work',when:()=>false,time:8,title:'한길을 걸어온 세월',han:'勤',hr:'근',
@@ -1460,9 +1485,69 @@ const EV=[
  to:()=>{P.wealth=Math.round(P.wealth*.5);hurt(15,'곤장');return '곤장을 맞고 재산을 빼앗겼다.'}},
 {id:'m_work2',when:()=>false,time:7,title:'한길의 달인',han:'匠',hr:'장',
  text:()=>`열두 해를 ${WORK_L[P.path]||'한길'}만 바라보았다. 사람들이 당신을 그 길의 달인이라 부른다.`,
- ch:[{l:'후배들에게 길을 열어 준다',act:()=>{hon(`${WORK_L[P.path]||'한길'}의 달인`,1/8000);P.s.매+=3;P.fame+=5;return '찾아오는 젊은이들에게 아는 것을 다 가르쳤다.'}},
-     {l:'더 높은 곳을 노린다',act:()=>{P.fame+=8;hon(`${WORK_L[P.path]||'한길'}의 달인`,1/8000);return '아직 멈출 때가 아니었다.'}}],
+ ch:[{l:'후배들에게 길을 열어 준다',act:()=>{hon(`${WORK_L[P.path]||'한길'}의 달인`,1/150);P.s.매+=3;P.fame+=5;return '찾아오는 젊은이들에게 아는 것을 다 가르쳤다.'}},
+     {l:'더 높은 곳을 노린다',act:()=>{P.fame+=8;hon(`${WORK_L[P.path]||'한길'}의 달인`,1/150);return '아직 멈출 때가 아니었다.'}}],
  to:()=>'칭찬을 들은 척도 하지 않았다.'},
+{id:'t_nongsang',season:0,w:7,cd:3,when:()=>P.path==='관'&&P.rank>=5,time:8,title:'권농',han:'農',hr:'농',
+ text:()=>`봄이다. ${P.gun}의 ${title()}로서 올해 고을 살림의 방침을 정해야 한다. 아전들이 죽간을 들고 기다린다.`,
+ ch:[{l:'둑과 도랑을 고친다',st:'정',d:50,act:ok=>{if(ok){P.flags.minsim=(P.flags.minsim||0)+1;P.fame+=5;later('t_songdeok',rint(3,5),{});return '봇물이 논마다 닿았다. 가을 소출이 늘었다.'}P.fame+=1;return '공사가 장마 전에 끝나지 못했다.'}},
+     {l:'둔전을 넓혀 군량을 쌓는다',st:'통',d:50,act:ok=>{if(ok){P.fame+=8;return `군량 창고가 찼다. ${ruler()==='한'?'조정':ruler()}에서 칭찬하는 글이 내려왔다.`}P.fame+=2;return '유민들이 둔전에서 달아났다.'}},
+     {l:'세금을 줄여 백성을 쉬게 한다',act:()=>{P.flags.minsim=(P.flags.minsim||0)+1;P.s.매+=2;P.fame+=2;later('t_songdeok',rint(3,5),{});return '달아났던 백성들이 돌아와 호적에 다시 올랐다.'}},
+     {l:'호족들과 연회를 열어 친분을 다진다',act:()=>{P.wealth+=15;P.flags.minsim=(P.flags.minsim||0)-1;return '호족들이 비단과 금을 들고 왔다. 백성들은 관아 담장 너머로 풍악 소리를 들었다.'}}],
+ to:()=>'아전들이 작년 방침대로 꾸렸다.'},
+{id:'t_songdeok',when:()=>false,time:8,title:'송덕비',han:'碑',hr:'비',
+ text:()=>(P.flags.minsim||0)>=2?'고을 노인들이 돈을 모아 당신의 덕을 기리는 비석을 세우겠다고 한다.':'고을 노인들이 찾아와 지난 몇 해의 다스림에 고마움을 전했다.',
+ ch:[{l:'고맙게 받는다',act:()=>{if((P.flags.minsim||0)>=2){hon('송덕비가 선 목민관',1/300000);P.fame+=8;return '관아 앞에 비석이 섰다. 지나는 이마다 그 글을 읽었다.'}P.fame+=3;return '노인들이 술 한 동이를 두고 갔다.'}},
+     {l:'비석 세울 돈으로 우물을 파게 한다',act:()=>{P.s.매+=3;P.fame+=6;hon('우물을 남긴 목민관',1/200000);return '비석 대신 우물 셋이 생겼다. 사람들은 그 우물을 당신 성을 따서 불렀다.'}}],
+ to:()=>'노인들은 뜻만 전하고 돌아갔다.'},
+{id:'t_haozu',w:5,cd:6,when:()=>P.path==='관'&&P.rank>=5,time:8,title:'호족의 담장',han:'豪',hr:'호',
+ text:()=>{P.tmp.hz=pick(SURN);return `${P.tmp.hz}씨 일족이 높은 담장 안에 부곡 수백을 두고 세금도 부역도 내지 않는다. 고을이 지켜본다.`},
+ ch:[{l:'군사를 내어 담장을 헌다',st:'통',d:60,act:ok=>{if(ok){P.fame+=10;P.flags.minsim=(P.flags.minsim||0)+1;later('t_haozu_rev',rint(2,5),{h:P.tmp.hz});return '부곡은 흩어지고 숨겼던 백 호가 호적에 올랐다.'}hurt(25,'부곡의 화살');P.fame=Math.max(0,P.fame-4);return '담장 위에서 화살이 쏟아졌다. 물러날 수밖에 없었다.'}},
+     {l:'그 집안과 혼인으로 묶는다',st:'매',d:50,act:ok=>{if(ok){P.wealth+=20;P.fame+=3;return '사돈이 된 뒤로 세금이 꼬박꼬박 들어왔다.'}return '격이 맞지 않는다며 거절당했다.'}},
+     {l:'눈감아 준다',act:()=>{P.wealth+=10;P.flags.minsim=(P.flags.minsim||0)-1;return '해마다 명절이면 그 집에서 수레가 왔다.'}}],
+ to:()=>'결정을 미루는 사이 그 집 담장은 한 자 더 높아졌다.'},
+{id:'t_haozu_rev',when:()=>false,time:7,title:'호족의 앙갚음',han:'讐',hr:'수',
+ text:()=>`담장이 헐린 ${P.tmp.q.h||'호족'}씨 일족이 낙양과 업의 연줄을 움직였다. 당신을 탄핵하는 글이 올라갔다고 한다.`,
+ ch:[{l:'백성들의 연명 상소로 맞선다',st:'매',d:50,act:ok=>{if(ok){P.fame+=8;return '고을 사람 수백이 이름을 적었다. 탄핵은 물리쳐졌다.'}P.rank=Math.max(0,P.rank-1);return '탄핵이 받아들여져 한 계급 깎였다.'}},
+     {l:'윗선에 뇌물을 쓴다',req:()=>P.wealth>=40,rq:'4만 전 필요',act:()=>{P.wealth-=40;return '탄핵 글은 어느 서랍에선가 사라졌다.'}},
+     {l:'벼슬을 던지고 물러난다',act:()=>{P.flags.retired=title();setPath('민');P.s.매+=3;return '인수를 풀어 관아 기둥에 걸어 두고 떠났다. 백성들이 십 리 밖까지 따라 나왔다.'}}],
+ to:()=>{P.rank=Math.max(0,P.rank-1);return '변명할 틈도 없이 한 계급 깎였다.'}},
+{id:'t_levy',w:6,cd:4,when:()=>P.path==='관'&&P.rank>=5&&ruler()!=='한'&&P.year>=190,time:7,title:'군량 독촉',han:'糧',hr:'량',
+ text:()=>`${ruler()}의 사자가 왔다. 전선에 보낼 군량 삼만 석을 한 달 안에 내라 한다. 창고에는 그 절반뿐이다.`,
+ ch:[{l:'백성의 씨곡식까지 긁어 채운다',act:()=>{P.fame+=8;P.flags.minsim=(P.flags.minsim||0)-2;return '기한을 맞췄다. 그해 봄 고을에는 뿌릴 씨앗이 없었다.'}},
+     {l:'형편을 적어 감해 달라 청한다',st:'정',d:55,act:ok=>{if(ok){P.fame+=4;P.flags.minsim=(P.flags.minsim||0)+1;return '이만 석으로 줄었다. 사자는 못마땅한 얼굴로 돌아갔다.'}P.fame=Math.max(0,P.fame-6);return '"전선의 병사는 굶는데 태수는 장부나 따지는가." 문책이 내려왔다.'}},
+     {l:'사재를 털어 모자란 만큼 사들인다',req:()=>P.wealth>=30,rq:'3만 전 필요',act:()=>{P.wealth=Math.round(P.wealth*.5);P.fame+=6;P.s.매+=3;P.flags.minsim=(P.flags.minsim||0)+1;return '집안 살림은 기울었지만 백성의 곳간은 건드리지 않았다.'}}],
+ to:()=>{P.fame=Math.max(0,P.fame-6);return '기한을 넘겼다. 문책이 내려왔다.'}},
+{id:'t_talent',w:4,cd:6,when:()=>P.path==='관'&&P.rank>=5,time:8,title:'천거',han:'薦',hr:'천',
+ text:()=>{P.tmp.tn=mkName();return `올해 천거할 사람을 정해야 한다. 가난하지만 재주가 뛰어난 ${P.tmp.tn}, 그리고 호족 집안의 평범한 자제가 물망에 올랐다.`},
+ ch:[{l:()=>`${jo(P.tmp.tn,'을/를')} 천거한다`,st:'지',d:45,act:ok=>{if(ok){P.fame+=6;later('t_talent_back',rint(5,9),{n:P.tmp.tn});return `${jo(P.tmp.tn,'은/는')} 낙양으로 떠나며 세 번 절했다.`}P.fame+=1;return '천거는 했지만 윗선에서 받아들이지 않았다.'}},
+     {l:'호족의 자제를 천거한다',act:()=>{P.wealth+=25;P.s.매-=2;return '그 집에서 수레 두 대가 왔다. 재주 있는 젊은이는 고을을 떠났다.'}},
+     {l:'올해는 천거하지 않는다',act:()=>'마땅한 사람이 없다고 적어 올렸다.'}],
+ to:()=>'기한이 지나 천거 없이 넘어갔다.'},
+{id:'t_talent_back',when:()=>false,time:8,title:'천거한 사람',han:'報',hr:'보',
+ text:()=>`옛날 당신이 천거한 ${jo(P.tmp.q.n,'이/가')} 조정의 높은 자리에 올랐다는 소식이다. 그가 사람을 보내왔다.`,
+ say:()=>[P.tmp.q.n,'저를 알아봐 주신 은혜를 잊은 적이 없습니다.'],
+ ch:[{l:'그의 주선을 받아들인다',act:()=>{P.fame+=12;hon('인재를 알아본 사람',1/50000);return '그의 말 한마디에 당신의 이름이 조정에 올랐다.'}},
+     {l:'사사로운 보답은 사양한다',act:()=>{P.s.매+=4;P.fame+=6;hon('인재를 알아본 사람',1/50000);return '"나라를 위해 천거했을 뿐이오." 그 말이 널리 퍼졌다.'}}],
+ to:()=>'사자는 선물만 두고 돌아갔다.'},
+{id:'g_supply',w:5,cd:5,when:()=>P.path==='군'&&P.rank>=6&&P.year>=190,time:7,title:'끊긴 군량',han:'餉',hr:'향',
+ text:()=>'보급로가 끊긴 지 열흘이다. 병사들이 말먹이 콩을 삶아 먹는다. 가까운 마을에는 가을걷이한 곡식이 있다.',
+ ch:[{l:'마을에서 곡식을 거둔다',act:()=>{P.s.매-=4;P.fame+=3;return '군은 살았다. 마을 사람들은 그해 겨울을 넘기지 못했다.'}},
+     {l:'군마를 잡아 버틴다',st:'통',d:55,act:ok=>{if(ok){P.fame+=8;P.s.매+=2;return '장수의 말부터 잡았다. 병사들은 한 명도 달아나지 않았다.'}P.fame=Math.max(0,P.fame-4);return '사흘 만에 탈영이 줄을 이었다.'}},
+     {l:'군을 물린다',act:()=>{P.fame=Math.max(0,P.fame-5);return '싸워 보지도 못하고 물러났다. 군은 온전했다.'}}],
+ to:()=>{P.fame=Math.max(0,P.fame-6);return '결정을 못 내리는 사이 굶주린 병사들이 흩어졌다.'}},
+{id:'g_surrender',w:5,cd:6,when:()=>P.path==='군'&&P.rank>=6&&P.year>=190,time:8,title:'항장',han:'降',hr:'항',
+ text:()=>{P.tmp.hj=mkName();return `싸움에 진 적장 ${jo(P.tmp.hj,'이/가')} 묶여 왔다. 무릎은 꿇었지만 눈빛은 꺾이지 않았다.`},
+ say:()=>[P.tmp.hj,'죽이려거든 어서 죽여라. 살려 둔다면 그 은혜는 잊지 않겠다.'],
+ ch:[{l:'결박을 풀고 부장으로 삼는다',st:'매',d:50,act:ok=>{if(ok){P.fame+=8;P.flags.guardian=P.flags.guardian||P.tmp.hj;return `${jo(P.tmp.hj,'은/는')} 그날부터 당신의 앞을 지켰다.`}later('g_surrender_x',rint(1,3),{n:P.tmp.hj});return `${jo(P.tmp.hj,'은/는')} 고개를 숙였다. 속마음은 알 수 없다.`}},
+     {l:'주군에게 보낸다',act:()=>{P.fame+=5;return '함거에 실어 보냈다. 처분은 주군의 몫이다.'}},
+     {l:'목을 벤다',act:()=>{P.fame+=3;P.s.매-=3;return '진문 앞에 목이 걸렸다. 항복하려던 다른 적장들이 마음을 돌렸다.'}}],
+ to:()=>'결정을 미루는 사이 그는 옥에서 스스로 목숨을 끊었다.'},
+{id:'g_surrender_x',when:()=>false,time:6,title:'배반',han:'反',hr:'반',
+ text:()=>`부장으로 삼았던 항장 ${jo(P.tmp.q.n,'이/가')} 한밤에 진문을 열고 옛 주인의 군사를 끌어들였다.`,
+ ch:[{l:'칼을 들고 맞선다',st:'무',d:60,act:ok=>{if(ok){P.fame+=10;return '난전 속에서 그를 베었다.'}hurt(40,`${P.tmp.q.n}의 배반`);return '등에 칼을 맞았다.'}},
+     {l:'진을 버리고 물러난다',act:()=>{P.fame=Math.max(0,P.fame-8);return '군량과 깃발을 버리고 달아났다.'}}],
+ to:()=>{hurt(35,`${P.tmp.q.n}의 배반`);return '잠결에 불길을 보았다.'}},
 {id:'retire',w:3,once:1,when:()=>P.age>=55&&['군','관'].includes(P.path),time:7,title:'흰머리',han:'老',hr:'로',
  text:()=>'거울 속 머리가 하얗다. 칼도 붓도 예전 같지 않다.',
  ch:[{l:'벼슬을 내려놓고 낙향한다',act:()=>{const p=P.path,r=P.rank;P.flags.retired=title();later('f2_retire_call',rint(2,4),{t:P.flags.retired,p,r,l:ruler()});setPath('민');P.wealth+=10;P.hp=Math.min(maxHp(),P.hp+15);return '고향으로 돌아가 손주들과 지냈다.'}},
@@ -1471,7 +1556,7 @@ const EV=[
 /* ---- 확장 사건 (시대별) ---- */
 /* ===== 1시대 난세 전야 (150~183) ===== */
 {id:'a_danggu',w:4,once:1,when:()=>P.year>=166&&P.year<=172&&P.age>=12,time:8,title:'당인의 문객',han:'錮',hr:'고',
- text:()=>{P.tmp.sc=pick(SURN)+pick(GIV);return `환관에게 당인(黨人)으로 몰린 선비 ${jo(P.tmp.sc,'이/가')} 한밤중 문을 두드린다. 당인을 숨긴 집은 멸문된다는 방이 붙어 있다.`},
+ text:()=>{P.tmp.sc=mkName();return `환관에게 당인(黨人)으로 몰린 선비 ${jo(P.tmp.sc,'이/가')} 한밤중 문을 두드린다. 당인을 숨긴 집은 멸문된다는 방이 붙어 있다.`},
  ch:[{l:'광에 숨겨 준다',st:'지',d:45,act:ok=>{if(ok){P.fame+=8;P.s.매+=4;P.flags.qingliu=1;later('f2_danggu_back',Math.max(2,Math.min(12,184-P.year)),{sc:P.tmp.sc});return '사흘 뒤 선비는 무사히 떠났다. 청류 사이에 당신 집안의 이름이 돌았다.'}hurt(30,'옥사');P.wealth=Math.floor(P.wealth*.5);return '이웃의 밀고로 관리가 들이닥쳤다. 가산을 털어 겨우 목숨을 샀다.'}},
      {l:'노자만 쥐여 보낸다',act:()=>{P.wealth=Math.max(0,P.wealth-4);P.s.매+=2;return '선비는 고개를 숙이고 어둠 속으로 사라졌다.'}},
      {l:'관아에 고발한다',act:()=>{P.wealth+=8;P.s.매-=6;later('f2_danggu_inf',Math.max(2,Math.min(12,184-P.year)),{sc:P.tmp.sc});return '상금을 받았다. 고을 사람들이 당신 집 앞을 돌아서 다녔다.'}}],
@@ -1479,7 +1564,7 @@ const EV=[
 {id:'a_taixue',w:4,once:1,when:()=>P.year>=168&&P.year<=183&&P.age>=14&&P.age<=22&&(['명문 사족','지방 호족','아전'].includes(P.status)||P.s.지>=55),time:8,title:'태학생',han:'學',hr:'학',
  text:()=>'낙양 태학에 들어갔다. 학생이 삼만이 넘는다. 학사 담벼락에는 환관을 비난하는 글이 몰래 나붙는다.',
  ch:[{l:'경서 공부에만 매달린다',act:()=>{P.s.지+=6;P.s.매-=1;return '오경을 외우며 밤을 새웠다. 시험에 붙어 이름이 올랐다. 동문들은 책벌레라 불렀다.'}},
-     {l:'청의(淸議)에 이름을 보탠다',st:'매',d:50,act:ok=>{if(ok){const m=pick(SURN)+pick(GIV);P.fame+=8;P.s.매+=3;later('f2_taixue_mate',rint(3,6),{m});return `선배 태학생 ${jo(m,'이/가')} 당신을 동지라 불렀다.`}hurt(25,'옥사');P.fame+=3;return `${P.year===172?'사례교위 단경':'관병'}의 군사가 태학을 뒤져 학생들을 잡아갔다. 당신도 끌려갔다 풀려났다.`}},
+     {l:'청의(淸議)에 이름을 보탠다',st:'매',d:50,act:ok=>{if(ok){const m=mkName();P.fame+=8;P.s.매+=3;later('f2_taixue_mate',rint(3,6),{m});return `선배 태학생 ${jo(m,'이/가')} 당신을 동지라 불렀다.`}hurt(25,'옥사');P.fame+=3;return `${P.year===172?'사례교위 단경':'관병'}의 군사가 태학을 뒤져 학생들을 잡아갔다. 당신도 끌려갔다 풀려났다.`}},
      {l:'환관 집안 자제와 사귄다',act:()=>{P.s.정+=5;P.s.매-=3;P.wealth+=4;return '연회에 자주 불려 갔다. 동문들의 눈길이 싸늘해졌다.'}}],
  to:()=>{P.s.지+=2;return '이것저것 기웃거리다 한 해가 갔다.'}},
 {id:'a_hongdu',w:3,once:1,when:()=>P.year>=178&&P.year<=183&&P.age>=16&&P.s.지>=45,time:7,title:'홍도문학',han:'鴻',hr:'홍',
@@ -1555,13 +1640,13 @@ const EV=[
  to:()=>'장례를 마치고 나니 한 해가 갔다.'},
 {id:'a_zhengxuan',w:4,once:1,when:()=>P.year>=170&&P.year<=183&&P.age>=12&&P.age<=25&&inR('청주','서주','연주','기주'),time:7,title:'고밀의 스승',han:'經',hr:'경',
  text:()=>'당고로 벼슬이 막힌 정현이 북해 고밀에서 경학을 가르친다. 문하생이 천 명을 넘는다고 한다.',
- ch:[{l:'책 보따리를 지고 찾아간다',st:'지',d:40,act:ok=>{moveTo('청주');if(ok){const m=pick(SURN)+pick(GIV);P.s.지+=8;P.fame+=4;later('f2_zheng_mate',rint(4,8),{m});return `삼 년을 머물며 주석 다는 법을 배웠다. 동문 ${jo(m,'과/와')} 한 방을 썼다.`}P.s.지+=3;return '문하생이 너무 많아 선생 얼굴은 멀리서만 보았다.'}},
+ ch:[{l:'책 보따리를 지고 찾아간다',st:'지',d:40,act:ok=>{moveTo('청주');if(ok){const m=mkName();P.s.지+=8;P.fame+=4;later('f2_zheng_mate',rint(4,8),{m});return `삼 년을 머물며 주석 다는 법을 배웠다. 동문 ${jo(m,'과/와')} 한 방을 썼다.`}P.s.지+=3;return '문하생이 너무 많아 선생 얼굴은 멀리서만 보았다.'}},
      {l:'고향 훈장에게 배운다',act:()=>{P.s.지+=3;P.s.정+=2;return '논어와 효경을 뗐다.'}},
      {l:'글보다 활이 좋다',act:()=>{P.s.무+=4;P.s.지-=1;return '산에서 꿩을 쫓았다. 아버지는 혀를 찼다.'}}],
  to:()=>'길을 나설 때를 놓쳤다.'},
 {id:'a_mayuanyi',w:6,once:1,when:()=>P.year===184&&P.age>=12&&inR('사례'),time:7,title:'낙양의 거열',han:'告',hr:'고',
  text:()=>'장각의 제자 당주가 고변해 태평도 대방 마원의가 낙양에서 거열을 당했다. 그와 내통한 자를 찾는 수색이 집집을 돈다.',
- ch:[{l:'태평도와 얽힌 이웃을 숨긴다',st:'지',d:50,act:ok=>{if(ok){const nb=pick(SURN)+pick(GIV);P.s.매+=4;later('f2_myy_nb',rint(1,3),{nb});return `이웃 ${jo(nb,'은/는')} 무사히 성을 빠져나갔다.`}hurt(35,'옥사');return '연좌되어 매질을 당했다. 이 일로 죽은 사람이 천여 명이었다.'}},
+ ch:[{l:'태평도와 얽힌 이웃을 숨긴다',st:'지',d:50,act:ok=>{if(ok){const nb=mkName();P.s.매+=4;later('f2_myy_nb',rint(1,3),{nb});return `이웃 ${jo(nb,'은/는')} 무사히 성을 빠져나갔다.`}hurt(35,'옥사');return '연좌되어 매질을 당했다. 이 일로 죽은 사람이 천여 명이었다.'}},
      {l:'수색에 앞장선다',act:()=>{P.fame+=3;P.s.매-=5;return '아는 얼굴들이 끌려가는 것을 보았다.'}},
      {l:'부적과 누런 천을 아궁이에 태운다',req:()=>P.flags.taiping,rq:'태평도 인연',act:()=>{P.flags.taiping=0;return '연기가 다 빠질 때까지 숨을 죽였다.'}}],
  to:()=>{hurt(20,'수색대의 몽둥이');return '수색대가 문을 부수고 들어왔다.'}},
@@ -1752,7 +1837,7 @@ const EV=[
  text:()=>'동탁이 작은 돈을 마구 찍어 낸 뒤로 동전은 쓸모가 없어졌다. 장터에서는 쌀 몇 되, 베 한 필로 물건을 바꾼다.',
  ch:[{l:'베를 짜서 쌓아 둔다',act:()=>{P.wealth+=4;hurt(5,'과로');return '베 한 필이 곧 돈이었다. 손이 갈라지도록 베틀을 밟았다.'}},
      {l:'고을마다 다른 시세를 노린다',st:'정',d:50,act:ok=>{if(ok){P.wealth+=12;if(P.path==='민')setPath('상');return '곡식이 흔한 고을과 베가 흔한 고을을 오가며 이문을 남겼다.'}P.wealth=Math.floor(P.wealth*.7);return '받아 온 곡식 자루를 열어 보니 물에 불린 쭉정이였다.'}},
-     {l:'곡식에 물을 먹이고 베를 얇게 짠다',st:'지',d:45,act:ok=>{if(ok){const n=pick(SURN)+pick(GIV);P.wealth+=10;P.s.매-=4;later('f3_barter_mark',rint(2,4),{n});return `물 먹인 곡식으로 ${n}이라는 농부에게서 베 세 필을 받아 냈다. 다들 그렇게 했다.`}hurt(15,'장터의 매질');P.fame=Math.max(0,P.fame-3);return '속임수가 들켜 장터 한복판에서 매를 맞았다.'}}],
+     {l:'곡식에 물을 먹이고 베를 얇게 짠다',st:'지',d:45,act:ok=>{if(ok){const n=mkName();P.wealth+=10;P.s.매-=4;later('f3_barter_mark',rint(2,4),{n});return `물 먹인 곡식으로 ${n}이라는 농부에게서 베 세 필을 받아 냈다. 다들 그렇게 했다.`}hurt(15,'장터의 매질');P.fame=Math.max(0,P.fame-3);return '속임수가 들켜 장터 한복판에서 매를 맞았다.'}}],
  to:()=>{P.wealth=Math.max(0,P.wealth-5);return '바꿀 물건을 찾아 헤매다 장이 파했다.'}},
 {id:'b_halberd',w:5,once:1,when:()=>inR('서주','예주')&&P.year===196&&['군','민'].includes(P.path)&&P.age>=15,time:7,title:'원문의 화극',han:'戟',hr:'극',
  text:()=>'여포가 원술의 장수 기령과 유비를 함께 불렀다. 영문에 화극을 세우고 "작은 가지를 맞히면 양쪽 모두 군사를 물리라" 한다.',
@@ -1830,7 +1915,7 @@ const EV=[
 {id:'c_yanguan',w:4,once:1,when:()=>P.year>=200&&P.year<=207&&inR('사례','병주')&&['상','적','민'].includes(P.path)&&P.age>=16,time:7,title:'하동 소금',han:'鹽',hr:'염',
  text:()=>'조정이 하동 소금못에 염관을 다시 두었다. 소금 판 돈으로 소를 사서 관중에 돌아온 유민에게 나눠 준다고 한다.',
  ch:[{l:'염관의 허가를 받아 판다',st:'정',d:45,act:ok=>{if(P.path==='민')setPath('상');if(ok){P.wealth+=14;return '관염을 받아 장안까지 실어 날랐다. 이문은 얇아도 길이 안전했다.'}P.wealth=Math.max(0,P.wealth-5);return '허가 문서 한 장에 뇌물이 세 번 들었다.'}},
-     {l:'밤에 사염을 빼돌린다',st:'지',d:55,act:ok=>{if(ok){const n=pick(SURN)+pick(GIV);P.wealth+=25;if(P.path==='민')setPath('적');later('f3_yanguan_buyer',rint(2,4),{n});return `관염 절반 값에 팔자 사려는 사람이 줄을 섰다. 가장 큰손은 ${n}이라는 자였다.`}hurt(40,'염관의 형벌');P.wealth=Math.floor(P.wealth*.5);return '염관 군졸에게 붙잡혔다. 소금 가마니와 함께 끌려갔다.'}},
+     {l:'밤에 사염을 빼돌린다',st:'지',d:55,act:ok=>{if(ok){const n=mkName();P.wealth+=25;if(P.path==='민')setPath('적');later('f3_yanguan_buyer',rint(2,4),{n});return `관염 절반 값에 팔자 사려는 사람이 줄을 섰다. 가장 큰손은 ${n}이라는 자였다.`}hurt(40,'염관의 형벌');P.wealth=Math.floor(P.wealth*.5);return '염관 군졸에게 붙잡혔다. 소금 가마니와 함께 끌려갔다.'}},
      {l:'소를 받아 관중에 정착한다',act:()=>{setPath('민');moveTo('사례');P.wealth+=6;return '관청 소 한 마리와 묵은 밭을 받았다. 쟁기질을 다시 배웠다.'}}],
  to:()=>{P.wealth=Math.max(0,P.wealth-2);return '소금 수레가 지나가는 것만 보았다. 소금값은 그대로 비쌌다.'}},
 {id:'c_ximin',w:4,once:1,when:()=>P.year>=205&&P.year<=207&&ruler()==='조조'&&inR('기주','유주','청주')&&P.path==='민'&&P.age>=15,time:7,title:'둔전 이주',han:'徙',hr:'사',
@@ -1913,7 +1998,7 @@ const EV=[
  text:()=>'조공이 위왕에 올랐다. 축하하는 글을 올리라는 공문이 돈다. 몇 해 전 위공 책봉에 반대한 순욱은 근심 속에 죽었다.',
  ch:[{l:'화려한 하례문을 짓는다',st:'지',d:45,act:ok=>{if(ok){P.fame+=8;P.rank+=1;return '글이 위왕부까지 올라가 읽혔다. 자리가 한 계단 올랐다.'}P.s.지+=1;return '남들 글 사이에 묻혀 아무도 읽지 않았다.'}},
      {l:'이름만 올리고 말을 아낀다',act:()=>{P.s.정+=2;return '조용히 지나갔다. 그해 최염이 편지 한 줄 때문에 죽었다.'}},
-     {l:'한실을 그리는 글을 쓴다',st:'매',d:60,act:ok=>{P.s.매+=4;if(ok){P.fame+=5;later('f3_weiwang_plot',P.year===216?rint(2,3):2,{n:pick(SURN)+pick(GIV)});return '글은 끝내 위에 닿지 않았다. 몇몇 선비들이 그 글을 베껴 돌려 읽었다.'}hurt(40,'옥사');setPath('민');return '밀고가 들어갔다. 옥에서 풀려났을 때는 관직이 없었다.'}}],
+     {l:'한실을 그리는 글을 쓴다',st:'매',d:60,act:ok=>{P.s.매+=4;if(ok){P.fame+=5;later('f3_weiwang_plot',P.year===216?rint(2,3):2,{n:mkName()});return '글은 끝내 위에 닿지 않았다. 몇몇 선비들이 그 글을 베껴 돌려 읽었다.'}hurt(40,'옥사');setPath('민');return '밀고가 들어갔다. 옥에서 풀려났을 때는 관직이 없었다.'}}],
  to:()=>{P.fame=Math.max(0,P.fame-2);return '기한을 놓쳤다. 상관이 당신 이름을 장부에 적어 두었다.'}},
 {id:'c_dingjun',w:6,once:1,when:()=>P.year>=218&&P.year<=219&&P.path==='군'&&(inR('익주')||(ruler()==='조조'&&inR('량주','사례')))&&P.age>=16,time:6,title:'정군산',han:'定',hr:'정',
  text:()=>{P.tmp.shu=inR('익주');return P.tmp.shu?'법정이 산 위에서 깃발을 흔든다. 황충 장군이 북을 울리며 내리닫는다. 아래에서는 하후연이 녹각을 고치고 있다.':'하후연 장군이 몸소 불탄 녹각을 고치러 나섰다. 산 위에서 북소리가 울린다.'},
@@ -1935,7 +2020,7 @@ const EV=[
      {l:'축하 잔치에서 술을 얻어 마신다',act:()=>{P.wealth+=1;P.hp=Math.min(maxHp(),P.hp+3);return '고을 관아가 술과 고기를 풀었다. 천자가 바뀌어도 술맛은 같았다.'}}],
  to:()=>'왕조가 바뀌었다는 것을 장날에야 알았다. 연호가 황초로 바뀌었다.'},
 {id:'d_jiupin',w:4,once:1,when:()=>P.year>=220&&P.year<=234&&ruler()==='위'&&['민','관'].includes(P.path)&&P.age>=18&&P.age<=50,time:7,title:'중정관의 품평',han:'品',hr:'품',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `구품관인법이 내려와 군마다 중정관이 선비들의 품을 매긴다. 이 고을 중정관은 ${P.tmp.n}이다. 품이 낮으면 벼슬길도 막힌다.`},
+ text:()=>{P.tmp.n=mkName();return `구품관인법이 내려와 군마다 중정관이 선비들의 품을 매긴다. 이 고을 중정관은 ${P.tmp.n}이다. 품이 낮으면 벼슬길도 막힌다.`},
  ch:[{l:'고을 평판을 다진다',st:'매',d:50,act:ok=>{if(ok){P.fame+=6;if(P.path==='민')setPath('관');return '효행과 학문으로 이름이 올라 높은 품을 받았다.'}P.s.매+=1;return '하품을 받았다. 가문 없는 자에게 상품은 드물었다.'}},
      {l:'중정관 집에 예물을 보낸다',req:()=>P.wealth>=25,rq:'2만 5천 전 필요',p:.6,act:ok=>{P.wealth-=20;if(ok){P.fame+=4;if(P.path==='민')setPath('관');later('f3_jiupin_gift',rint(3,5),{n:P.tmp.n||'중정관'});return '중정관이 당신 이름 옆에 좋은 평을 적었다. 그 집 예물 장부에도 당신 이름이 적혔다.'}return '예물만 받고 품은 그대로였다.'}},
      {l:'품 따위에 매이지 않는다',act:()=>{P.s.지+=2;P.fame=Math.max(0,P.fame-1);return '집안이 품을 정하는 세상이라며 웃어넘겼다. 대신 책을 더 읽었다.'}}],
@@ -2049,7 +2134,7 @@ const EV=[
  to:()=>'흥정하는 사이 옆 사람이 소를 끌고 갔다.'},
 {id:'d_corvee',w:4,cd:5,when:()=>P.year>=160&&P.year<=260&&P.path==='민'&&P.age>=16&&P.age<=55,time:6,title:'부역',han:'役',hr:'역',
  text:()=>{P.tmp.work=pick(['성벽 수축','제방 쌓기','군량 수송','역참 길 닦기']);return `관아에서 부역 명단이 내려왔다. 한 달 동안 ${P.tmp.work}에 나가야 한다.`},
- ch:[{l:'부역에 나간다',st:'무',d:40,act:ok=>{if(ok){const n=pick(SURN)+pick(GIV);P.s.무+=2;P.s.매+=1;later('f3_corvee_mate',rint(2,5),{n,work:P.tmp.work});return `${jo(P.tmp.work,'을/를')} 마치고 돌아왔다. 함께 흙짐을 진 ${jo(n,'과/와')} 형제처럼 되었다.`}hurt(20,P.tmp.work);return '흙짐에 깔려 허리를 다쳤다.'}},
+ ch:[{l:'부역에 나간다',st:'무',d:40,act:ok=>{if(ok){const n=mkName();P.s.무+=2;P.s.매+=1;later('f3_corvee_mate',rint(2,5),{n,work:P.tmp.work});return `${jo(P.tmp.work,'을/를')} 마치고 돌아왔다. 함께 흙짐을 진 ${jo(n,'과/와')} 형제처럼 되었다.`}hurt(20,P.tmp.work);return '흙짐에 깔려 허리를 다쳤다.'}},
      {l:'사람을 사서 대신 보낸다',req:()=>P.wealth>=15,rq:'1만 5천 전 필요',act:()=>{P.wealth-=10;return '이웃집 머슴이 대신 갔다. 비단 한 필 값이 나갔다.'}},
      {l:'산으로 도망친다',st:'지',d:50,act:ok=>{if(ok){P.s.매-=1;return '산에서 한 달을 버텼다. 명단은 다음 사람에게 넘어갔고 이웃들의 눈길이 차가워졌다.'}hurt(20,'곤장');P.wealth=Math.max(0,P.wealth-5);return '붙잡혀 곤장을 맞고 두 배로 일했다.'}}],
  to:()=>{hurt(15,'부역');return '대답도 하기 전에 끌려갔다.'}},
@@ -2061,7 +2146,7 @@ const EV=[
  to:()=>{P.fame=Math.max(0,P.fame-2);return '장례를 미루는 사이 친척들 입방아에 올랐다.'}},
 {id:'d_salt',w:4,cd:5,when:()=>P.year>=160&&P.year<=260&&['상','적'].includes(P.path)&&P.age>=16,time:6,title:'밀염',han:'鹽',hr:'염',
  text:()=>'관청 소금은 비싸고 바닷가 소금은 싸다. 밀염 짐을 지고 관문 샛길을 넘자는 제안이 들어왔다.',
- ch:[{l:'밀염을 지고 샛길을 넘는다',st:'지',d:50,act:ok=>{if(ok){const n=pick(SURN)+pick(GIV);P.wealth+=15;later('f3_salt_boss',rint(1,2),{n});return `소금 한 짐이 비단 한 필이 되었다. 짐을 대 준 ${jo(n,'이/가')} 당신을 눈여겨보았다.`}hurt(25,'관문 수졸의 매');P.wealth=Math.floor(P.wealth*.6);return '관문 수졸에게 붙잡혀 소금을 빼앗기고 매를 맞았다.'}},
+ ch:[{l:'밀염을 지고 샛길을 넘는다',st:'지',d:50,act:ok=>{if(ok){const n=mkName();P.wealth+=15;later('f3_salt_boss',rint(1,2),{n});return `소금 한 짐이 비단 한 필이 되었다. 짐을 대 준 ${jo(n,'이/가')} 당신을 눈여겨보았다.`}hurt(25,'관문 수졸의 매');P.wealth=Math.floor(P.wealth*.6);return '관문 수졸에게 붙잡혀 소금을 빼앗기고 매를 맞았다.'}},
      {l:'밀염꾼들을 관에 밀고한다',st:'매',d:45,act:ok=>{if(ok){P.wealth+=6;P.fame+=2;later('f3_salt_revenge',rint(2,4),{});return '포상금을 받았다. 붙잡혀 가던 밀염꾼 하나가 당신 얼굴을 오래 쳐다보았다.'}hurt(20,'밀염꾼의 칼');return '밀고한 사실이 새어 나갔다.'}},
      {l:'관청 소금만 판다',act:()=>{P.wealth+=2;P.s.정+=1;return '남는 건 적었지만 밤에 잠은 편히 잤다.'}}],
  to:()=>'제안한 자는 다른 짐꾼을 찾아갔다.'},
@@ -2073,12 +2158,12 @@ const EV=[
  to:()=>{P.s.매-=1;return '구경만 하다 판이 끝났다. 끼지 않았다고 핀잔을 들었다.'}},
 {id:'d_guosuo',w:3,cd:5,when:()=>P.year>=160&&P.year<=260&&P.path==='관'&&P.age>=18,time:7,title:'과소',han:'印',hr:'인',
  text:()=>'호적이 없는 피난민 일가가 관문을 넘게 과소(過所)를 하나 써 달라고 한다. 관인을 찍는 건 당신 몫이다.',
- ch:[{l:'몰래 과소를 써 준다',st:'지',d:45,act:ok=>{P.s.매+=4;if(ok){const n=pick(SURN)+pick(GIV);later('f3_guosuo_son',rint(5,9),{n});return `그 가족이 무사히 관문을 넘었다는 말을 들었다. 막내아이 이름이 ${n}이라 했다.`}hurt(20,'문책');P.fame=Math.max(0,P.fame-4);return '관문에서 위조가 드러나 문책을 받았다.'}},
+ ch:[{l:'몰래 과소를 써 준다',st:'지',d:45,act:ok=>{P.s.매+=4;if(ok){const n=mkName();later('f3_guosuo_son',rint(5,9),{n});return `그 가족이 무사히 관문을 넘었다는 말을 들었다. 막내아이 이름이 ${n}이라 했다.`}hurt(20,'문책');P.fame=Math.max(0,P.fame-4);return '관문에서 위조가 드러나 문책을 받았다.'}},
      {l:'돈을 받고 써 준다',act:()=>{P.wealth+=12;P.flags.corrupt=1;later('f3_guosuo_audit',rint(2,4),{});return '비단 두 필을 받았다. 장부에 흔적이 남았다.'}},
      {l:'법대로 거절한다',act:()=>{P.s.정+=1;P.s.매-=1;return '가족은 밤에 샛길로 떠났다. 상관은 당신을 깐깐하다고 칭찬했다.'}}],
  to:()=>'답을 미루는 사이 가족이 사라졌다.'},
 {id:'d_heir',w:5,once:1,when:()=>P.year>=160&&P.year<=260&&P.path==='적'&&P.age>=18,time:6,title:'두목의 자리',han:'寨',hr:'채',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `늙은 두목이 화살 독으로 죽어 간다. 졸개들이 둘로 갈라져 당신과 둘째 두목 ${jo(P.tmp.n,'을/를')} 번갈아 본다.`},
+ text:()=>{P.tmp.n=mkName();return `늙은 두목이 화살 독으로 죽어 간다. 졸개들이 둘로 갈라져 당신과 둘째 두목 ${jo(P.tmp.n,'을/를')} 번갈아 본다.`},
  ch:[{l:'두목 자리를 차지한다',st:'통',d:50,act:ok=>{if(ok){P.fame+=10;P.wealth+=8;return '두목의 칼을 물려받았다. 졸개들이 무릎을 꿇었다.'}hurt(35,'둘째 두목의 칼');return '둘째 두목이 먼저 칼을 뽑았다.'}},
      {l:'둘째에게 양보한다',act:()=>{P.s.매+=3;later('f3_heir_second',rint(2,4),{n:P.tmp.n||'두목'});return `산채는 갈라지지 않았다. ${jo(P.tmp.n||'둘째','은/는')} 당신을 오른팔로 삼았다.`}},
      {l:'산채 재물을 챙겨 달아난다',st:'지',d:45,act:ok=>{if(ok){P.wealth+=15;setPath('민');const r=moveRandom();return `금붙이를 품고 ${jo(r,'로')} 가서 새 이름으로 살았다.`}hurt(25,'추격대의 몽둥이');return '산을 내려가기도 전에 붙잡혔다.'}}],
@@ -2288,7 +2373,7 @@ const EV=[
  to:()=>{hurt(30,'현병의 창');return '현병이 산채를 덮쳤다.'}},
 {id:'f1_drought_well',when:()=>false,time:7,title:'우물 다툼',han:'井',hr:'정',
  text:()=>'당신이 판 우물 덕에 마을이 살았다. 그런데 물이 마른 이웃 마을 사람들이 물을 나눠 달라며 몰려왔다.',
- ch:[{l:'물을 나눈다',act:()=>{P.s.매+=4;P.fame+=4;P.wealth=Math.max(0,P.wealth-2);kind(pick(SURN)+pick(GIV),'가뭄 때 당신 우물물을 얻어 간 이웃 마을 사람');return '두 마을이 한 우물을 쓰게 되었다. 우리 논에 댈 물은 줄었다.'}},
+ ch:[{l:'물을 나눈다',act:()=>{P.s.매+=4;P.fame+=4;P.wealth=Math.max(0,P.wealth-2);kind(mkName(),'가뭄 때 당신 우물물을 얻어 간 이웃 마을 사람');return '두 마을이 한 우물을 쓰게 되었다. 우리 논에 댈 물은 줄었다.'}},
      {l:'물값을 받는다',act:()=>{P.wealth+=6;P.s.매-=3;return '한 동이에 몇 전씩 받았다. 원망 섞인 눈길이 따라왔다.'}},
      {l:'마을 장정들과 우물을 지킨다',st:'무',d:40,act:ok=>{if(ok){P.s.무+=1;return '몽둥이를 든 장정들이 우물을 둘러쌌다. 이웃 마을은 물러갔다.'}hurt(20,'우물 싸움');return '몸싸움 끝에 머리가 깨졌다.'}}],
  to:()=>{P.s.매-=2;return '머뭇거리는 사이 두 마을 사이에 주먹다짐이 났다.'}},
@@ -2769,7 +2854,7 @@ const EV=[
  to:()=>{hurt(30,'염관의 형벌');P.wealth=Math.floor(P.wealth*.6);return '이름이 불린 날 군졸이 대문을 부쉈다.'}},
 {id:'f3_huatuo_book',when:()=>false,time:7,title:'의서를 펴다',han:'醫',hr:'의',
  text:()=>'고을에 돌림병이 돈다. 허도 옥에서 받아 감춘 화타의 의서를 몰래 꺼내 펼쳐 본다.',
- ch:[{l:'책대로 이웃들을 치료한다',st:'지',d:50,act:ok=>{if(ok){P.fame+=8;P.s.매+=3;P.traits=P.traits||[];if(!P.traits.includes('의술'))P.traits.push('의술');later('f3_huatuo_pupil',rint(3,5),{n:pick(SURN)+pick(GIV)});return '책에 적힌 대로 약을 달였다. 살아난 이웃들이 당신 집 문 앞에 쌀을 두고 갔다.'}hurt(25,'역병');return '병자들 곁을 지키다 당신도 열병에 걸렸다.'}},
+ ch:[{l:'책대로 이웃들을 치료한다',st:'지',d:50,act:ok=>{if(ok){P.fame+=8;P.s.매+=3;P.traits=P.traits||[];if(!P.traits.includes('의술'))P.traits.push('의술');later('f3_huatuo_pupil',rint(3,5),{n:mkName()});return '책에 적힌 대로 약을 달였다. 살아난 이웃들이 당신 집 문 앞에 쌀을 두고 갔다.'}hurt(25,'역병');return '병자들 곁을 지키다 당신도 열병에 걸렸다.'}},
      {l:'약방을 열어 처방을 판다',st:'정',d:45,act:ok=>{if(ok){P.wealth+=14;P.traits=P.traits||[];if(!P.traits.includes('의술'))P.traits.push('의술');return '처방 한 장에 비단 한 필을 받았다. 의원이라는 소리를 듣기 시작했다.'}P.wealth=Math.max(0,P.wealth-5);return '약재값만 들고 효험은 없었다. 책만 읽어서는 의원이 될 수 없었다.'}},
      {l:'화를 부를 책이라며 태운다',act:()=>{P.flags.medbook=0;P.s.지+=1;P.fame=Math.max(0,P.fame-1);return '불길 속에서 의원의 글씨가 말려 들어갔다. 이웃 몇이 그해 겨울을 넘기지 못했다.'}}],
  to:()=>{hurt(15,'역병');return '책을 펼치기도 전에 병이 집 안까지 들어왔다.'}},
@@ -2891,7 +2976,7 @@ const EV=[
      {l:'사자를 돌려보내고 인연을 끊는다',req:()=>P.path!=='적',rq:'산채를 떠난 사람만',act:()=>{P.s.지+=1;P.wealth=Math.max(0,P.wealth-2);return '사자에게 노잣돈을 쥐여 돌려보냈다. 옛 산채 이야기는 다시 꺼내지 않았다.'}}],
  to:()=>{hurt(25,'졸개들의 몽둥이');return '밤중에 졸개들이 움막을 덮쳤다.'}},
 {id:'e_watergate',w:()=>P.gun&&gunState(P.gun,P.year).harvest==='흉년'?6:3,cd:6,season:1,when:()=>P.year>=160&&P.year<=260&&P.path==='민'&&P.age>=16,time:6,title:'물꼬 다툼',han:'渠',hr:'거',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `가물어 봇물이 줄었다. 윗논 ${jo(P.tmp.n,'이/가')} 물꼬를 막아 당신 논에는 물이 한 방울도 내려오지 않는다.`},
+ text:()=>{P.tmp.n=mkName();return `가물어 봇물이 줄었다. 윗논 ${jo(P.tmp.n,'이/가')} 물꼬를 막아 당신 논에는 물이 한 방울도 내려오지 않는다.`},
  say:()=>[P.tmp.n,'우리 논부터 살아야 할 것 아닌가.'],
  ch:[{l:'밤에 몰래 물꼬를 튼다',st:'지',d:45,act:ok=>{if(ok){P.wealth+=5;later('e_f_water_feud',rint(2,4),{n:P.tmp.n});return '새벽까지 물을 대었다. 아침에 윗논 사람이 터진 둑을 보고 이를 갈았다.'}hurt(15,'물꼬 싸움의 삽자루');return '물꼬를 트다 들켜 삽자루로 얻어맞았다.'}},
      {l:'삼로에게 중재를 청한다',st:'정',d:45,act:ok=>{if(ok){P.wealth+=3;P.s.정+=1;return '삼로가 사흘씩 번갈아 물을 대라고 정해 주었다.'}P.s.매-=1;return '삼로는 윗논 집과 사돈 사이였다. 물은 여전히 오지 않았다.'}},
@@ -2916,7 +3001,7 @@ const EV=[
      {l:'됐다며 사양한다',act:()=>{P.fame+=3;return '마을에 당신이 군자라는 말이 돌았다.'}}],
  to:()=>{P.s.매+=1;return '그는 쌀 한 말을 두고 갔다.'}},
 {id:'e_oxthief',w:4,cd:8,when:()=>P.year>=160&&P.year<=260&&P.path==='민'&&P.age>=16,time:6,title:'소도둑',han:'牛',hr:'우',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `새벽에 외양간에서 소를 끌고 나가던 자를 붙잡았다. 뼈만 남은 열여섯 살 ${P.tmp.n}다. 어머니가 사흘째 굶는다고 한다.`},
+ text:()=>{P.tmp.n=mkName();return `새벽에 외양간에서 소를 끌고 나가던 자를 붙잡았다. 뼈만 남은 열여섯 살 ${P.tmp.n}다. 어머니가 사흘째 굶는다고 한다.`},
  ch:[{l:'좁쌀 한 자루를 주어 보낸다',act:()=>{P.wealth=Math.max(0,P.wealth-2);P.s.매+=2;later('e_f_oxthief_back',rint(4,8),{n:P.tmp.n});return '소년은 몇 번이고 절을 하고 산을 내려갔다.'}},
      {l:'정장에게 끌고 간다',act:()=>{P.fame+=1;later('e_f_oxthief_grudge',rint(4,8),{n:P.tmp.n});return '소년은 곤장 서른 대를 맞고 부역에 넘겨졌다.'}},
      {l:'일을 시켜 소 값을 치르게 한다',st:'통',d:40,act:ok=>{if(ok){P.wealth+=4;later('e_f_oxthief_back',rint(4,8),{n:P.tmp.n});return '소년은 한 해 동안 당신 밭을 갈았다. 떠날 때 큰절을 했다.'}P.wealth=Math.max(0,P.wealth-3);return '소년은 사흘 만에 닭 두 마리를 들고 달아났다.'}}],
@@ -2954,7 +3039,7 @@ const EV=[
      {l:'밭을 넘기고 죄를 면한다',act:()=>{P.wealth=Math.floor(P.wealth*.5);return '밭을 내주는 대신 고발은 없던 일이 되었다.'}}],
  to:()=>{P.wealth=Math.floor(P.wealth*.5);P.fame=Math.max(0,P.fame-4);return '말이 막혀 그대로 죄가 되었다.'}},
 {id:'e_neighborwed',w:4,cd:6,when:()=>P.year>=160&&P.year<=260&&['민','상'].includes(P.path)&&P.age>=18,time:6,title:'이웃 혼사',han:'婚',hr:'혼',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `이웃 ${P.tmp.n}네 아들이 장가를 든다. 빙례 비단이 모자란다며 그가 당신 집 문을 두드렸다.`},
+ text:()=>{P.tmp.n=mkName();return `이웃 ${P.tmp.n}네 아들이 장가를 든다. 빙례 비단이 모자란다며 그가 당신 집 문을 두드렸다.`},
  ch:[{l:'돈을 빌려준다',req:()=>P.wealth>=8,rq:'8천 전 필요',act:()=>{P.wealth-=6;later('e_f_wed_debt',rint(2,5),{n:P.tmp.n});return '그는 가을에 꼭 갚겠다며 손을 잡았다.'}},
      {l:'잔치 일을 거든다',st:'매',d:35,act:ok=>{if(ok){P.s.매+=2;return '사흘 동안 돼지를 잡고 국을 끓였다. 마을 어른들이 당신 이름을 기억했다.'}P.s.매+=1;return '술상을 엎어 신부 집 사람에게 핀잔을 들었다.'}},
      {l:'핑계를 대고 빠진다',act:()=>{P.s.매-=2;return '그 집 사람들이 당신 앞에서 말을 줄였다.'}}],
@@ -2990,7 +3075,7 @@ const EV=[
      {l:'죄를 인정한다',act:()=>{P.wealth=Math.max(0,P.wealth-10);P.fame=Math.max(0,P.fame-3);return '받은 돈의 갑절을 벌금으로 물었다.'}}],
  to:()=>{hurt(20,'곤장');return '현리가 당신을 불러냈다.'}},
 {id:'e_villageschool',w:()=>P.focus==='study'?6:2,cd:10,when:()=>P.year>=160&&P.year<=260&&['민','상'].includes(P.path)&&P.age>=22&&P.s.지>=6,time:7,title:'마을 글방',han:'塾',hr:'숙',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `마을 아이들이 당신이 글을 안다는 것을 알았다. 그중 ${P.tmp.n}라는 아이는 땅바닥에 글자를 베껴 쓰고 있다.`},
+ text:()=>{P.tmp.n=mkName();return `마을 아이들이 당신이 글을 안다는 것을 알았다. 그중 ${P.tmp.n}라는 아이는 땅바닥에 글자를 베껴 쓰고 있다.`},
  ch:[{l:'겨울마다 아이들을 가르친다',act:()=>{P.s.지+=2;P.s.매+=2;P.wealth=Math.max(0,P.wealth-2);later('e_f_pupil',rint(5,9),{n:P.tmp.n});return '아이들은 좁쌀과 땔감을 들고 왔다. 그 아이가 가장 빨랐다.'}},
      {l:'수업료를 받고 가르친다',st:'정',d:35,act:ok=>{if(ok){P.wealth+=5;P.s.지+=1;return '부잣집 아이 몇이 왔다. 가난한 그 아이는 문밖에서 들었다.'}P.wealth+=2;return '아이들이 사흘을 못 버티고 떠났다.'}},
      {l:'농사일이 바쁘다며 사양한다',act:()=>{P.wealth+=2;return '그 아이는 한동안 당신 집 앞을 서성이다 발길을 끊었다.'}}],
@@ -3034,7 +3119,7 @@ const EV=[
      {l:'이웃들과 함께 현에 호소한다',st:'정',d:()=>P.gov&&P.gov.trait==='청렴'?40:65,act:ok=>{if(ok){P.fame+=6;return '태수가 갑절 이자를 금하는 영을 내렸다.'}hurt(20,'곤장');P.wealth=Math.floor(P.wealth*.4);return '도리어 소란죄로 곤장을 맞고 밭도 잃었다.'}}],
  to:()=>{P.wealth=Math.floor(P.wealth*.5);return '도장을 찍으라는 말에 손이 떨렸다.'}},
 {id:'e_grainskim',w:4,cd:6,when:()=>P.year>=160&&P.year<=260&&P.path==='군'&&P.age>=16,time:7,title:'군량 착복',han:'糧',hr:'량',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `군량 자루에 모래가 반이다. 군량관 ${jo(P.tmp.n,'이/가')} 빼돌린 쌀을 밤마다 수레로 장터에 낸다는 걸 당신은 안다.`},
+ text:()=>{P.tmp.n=mkName();return `군량 자루에 모래가 반이다. 군량관 ${jo(P.tmp.n,'이/가')} 빼돌린 쌀을 밤마다 수레로 장터에 낸다는 걸 당신은 안다.`},
  ch:[{l:'장수에게 고발한다',st:'정',d:50,act:ok=>{if(ok){P.fame+=6;later('e_f_grain_revenge',rint(2,5),{n:P.tmp.n});return `${jo(P.tmp.n,'이/가')} 목이 베였다. 병사들 밥그릇이 다시 찼다.`}hurt(25,'무고죄의 군곤');return '군량관이 장부를 먼저 고쳐 놓았다. 무고로 군곤을 맞았다.'}},
      {l:'입을 다무는 대가로 몫을 받는다',act:()=>{P.wealth+=10;later('e_f_grain_audit',rint(1,3),{n:P.tmp.n});return '쌀 다섯 섬 값이 손에 들어왔다.'}},
      {l:'제 몫의 군량만 따로 챙긴다',st:'지',d:35,act:ok=>{if(ok){P.hp=Math.min(100,P.hp+5);return '모래를 일어 내고 먹었다. 배는 곯지 않았다.'}hurt(10,'배앓이');return '모래 섞인 밥에 배앓이를 했다.'}}],
@@ -3052,7 +3137,7 @@ const EV=[
      {l:'끝까지 모른다고 버틴다',p:.45,act:ok=>{if(ok)return '증거가 모자랐다. 군량관 혼자 목이 베였다.';hurt(30,'군곤');P.rank=Math.max(0,P.rank-1);return '증인이 나왔다. 계급이 깎이고 군곤을 맞았다.'}}],
  to:()=>{hurt(30,'군곤');return '이름이 불렸다.'}},
 {id:'e_lastwill',w:4,cd:8,when:()=>P.year>=160&&P.year<=260&&P.path==='군'&&P.age>=16,time:7,title:'전우의 유언',han:'遺',hr:'유',
- text:()=>{const f=(P.npcs||[]).find(x=>x.role==='동무'&&x.alive&&x.path==='군');if(f&&R()<.5){f.alive=0;P.tmp.n=f.n;}else P.tmp.n=pick(SURN)+pick(GIV);P.tmp.home=pick(['유주','기주','청주','연주','예주','서주','형주','양주','익주']);return `${jo(P.tmp.n,'이/가')} 배에 화살을 맞고 죽어 간다. 품에서 돈주머니를 꺼내 ${P.tmp.home}의 어머니께 전해 달라 한다.`},
+ text:()=>{const f=(P.npcs||[]).find(x=>x.role==='동무'&&x.alive&&x.path==='군');if(f&&R()<.5){f.alive=0;P.tmp.n=f.n;}else P.tmp.n=mkName();P.tmp.home=pick(['유주','기주','청주','연주','예주','서주','형주','양주','익주']);return `${jo(P.tmp.n,'이/가')} 배에 화살을 맞고 죽어 간다. 품에서 돈주머니를 꺼내 ${P.tmp.home}의 어머니께 전해 달라 한다.`},
  say:()=>[P.tmp.n,'어머니께... 내가 굶지 않았다고만...'],
  ch:[{l:'반드시 전하겠다고 약속한다',act:()=>{P.s.매+=2;later('e_f_will_mother',rint(1,3),{n:P.tmp.n,home:P.tmp.home});return '그는 웃는 얼굴로 숨을 거두었다. 돈주머니가 무겁다.'}},
      {l:'돈은 챙기고 고향엔 가지 않는다',act:()=>{P.wealth+=8;later('e_f_will_brother_x',rint(3,6),{n:P.tmp.n});return '죽은 사람은 말이 없다. 주머니를 허리에 찼다.'}},
@@ -3079,7 +3164,7 @@ const EV=[
  to:()=>{hurt(30,'전우 아우의 칼');return '그의 칼이 먼저 움직였다.'}},
 {id:'e_prisoners',w:4,cd:8,when:()=>P.year>=160&&P.year<=260&&P.path==='군'&&P.rank>=2&&P.gun&&gunState(P.gun,P.year).war,time:7,title:'포로 처분',han:'俘',hr:'부',
  text:()=>'싸움이 끝나고 포로 마흔 명이 남았다. 끌고 가자니 군량이 없고, 장수는 알아서 처리하라 한다.',
- ch:[{l:'모두 풀어 준다',st:'통',d:40,act:ok=>{P.s.매+=3;if(ok){P.tmp.n=pick(SURN)+pick(GIV);later('e_f_pow_return',rint(3,7),{n:P.tmp.n});return '포로들이 절을 하고 흩어졌다. 그중 한 사내가 당신 이름을 물었다.'}P.fame=Math.max(0,P.fame-3);return '장수가 군령을 어겼다며 화를 냈다.'}},
+ ch:[{l:'모두 풀어 준다',st:'통',d:40,act:ok=>{P.s.매+=3;if(ok){P.tmp.n=mkName();later('e_f_pow_return',rint(3,7),{n:P.tmp.n});return '포로들이 절을 하고 흩어졌다. 그중 한 사내가 당신 이름을 물었다.'}P.fame=Math.max(0,P.fame-3);return '장수가 군령을 어겼다며 화를 냈다.'}},
      {l:'목을 벤다',act:()=>{P.fame+=4;P.s.매-=4;later('e_f_pow_ghost',rint(2,5),{});return '수급이 공으로 셈해졌다. 밤에 그 골짜기를 지나는 병사가 없었다.'}},
      {l:'노비로 팔아 군자금을 만든다',act:()=>{P.wealth+=12;P.s.매-=1;return '노예 상인이 마흔 명을 한 줄로 묶어 데려갔다.'}}],
  to:()=>{P.fame=Math.max(0,P.fame-2);return '머뭇거리는 사이 포로 절반이 밤에 달아났다.'}},
@@ -3097,7 +3182,7 @@ const EV=[
      {l:'모른 척 지나간다',p:.5,act:ok=>{if(ok)return '아무 일도 없었다. 다만 밤마다 잠을 설쳤다.';hurt(20,'원한의 화살');return '숲에서 날아온 화살이 어깨에 박혔다.'}}],
  to:()=>{hurt(10,'악몽');return '밤새 잠을 이루지 못했다.'}},
 {id:'e_spysuspect',w:4,cd:6,when:()=>P.year>=160&&P.year<=260&&P.path==='군'&&P.age>=16,time:6,title:'첩자 의심',han:'諜',hr:'첩',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `새로 들어온 ${jo(P.tmp.n,'은/는')} 밤마다 막사를 나가 진채 둘레를 걷는다. 말투도 이 고장 것이 아니다.`},
+ text:()=>{P.tmp.n=mkName();return `새로 들어온 ${jo(P.tmp.n,'은/는')} 밤마다 막사를 나가 진채 둘레를 걷는다. 말투도 이 고장 것이 아니다.`},
  ch:[{l:'상관에게 보고한다',act:()=>{if(R()<.5){P.fame+=5;return `${P.tmp.n}의 품에서 진채 그림이 나왔다. 상을 받았다.`}P.s.매-=2;return `${jo(P.tmp.n,'은/는')} 고향 별을 보던 피난민이었다. 그는 곤장을 맞고 당신을 피했다.`}},
      {l:'몰래 뒤를 밟는다',st:'지',d:45,act:ok=>{if(ok){P.s.지+=2;later('e_f_spy_truth',rint(1,3),{n:P.tmp.n,spy:R()<.5?1:0});return '그는 진채 밖 무덤 앞에서 절을 했다. 더 지켜보기로 했다.'}hurt(15,'보초의 오인');return '보초에게 첩자로 오인되어 얻어맞았다.'}},
      {l:'술을 사며 가까워진다',st:'매',d:35,act:ok=>{later('e_f_spy_truth',rint(1,3),{n:P.tmp.n,spy:R()<.5?1:0,f:1});if(ok){P.s.매+=2;return '그는 고향 이야기를 많이 했다. 말끝마다 무언가를 감추었다.'}return '그는 술잔만 비우고 말이 없었다.'}}],
@@ -3128,7 +3213,7 @@ const EV=[
      {l:'말을 버리고 걸어서 물러난다',act:()=>{hurt(15,'퇴각');return '말은 적의 차지가 되었다.'}}],
  to:()=>{hurt(20,'혼전');return '말의 고삐가 손에서 미끄러졌다.'}},
 {id:'e_deserter',w:3,cd:7,when:()=>P.year>=160&&P.year<=260&&P.path==='군'&&P.rank>=1,time:7,title:'탈영병',han:'逃',hr:'도',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `밤 보초를 돌다 담을 넘는 자를 붙잡았다. 같은 고향 출신 ${P.tmp.n}이다. 처자가 굶는다며 보내 달라 한다.`},
+ text:()=>{P.tmp.n=mkName();return `밤 보초를 돌다 담을 넘는 자를 붙잡았다. 같은 고향 출신 ${P.tmp.n}이다. 처자가 굶는다며 보내 달라 한다.`},
  ch:[{l:'군율대로 넘긴다',act:()=>{P.fame+=3;P.s.매-=2;return `${jo(P.tmp.n,'은/는')} 이튿날 목이 베였다. 고향에 이 소식이 갔다.`}},
      {l:'모른 척 보내 준다',act:()=>{P.s.매+=2;later('e_f_deserter_back',rint(4,8),{n:P.tmp.n});return '그는 어둠 속으로 사라졌다. 보초 장부에는 이상 없음이라 적었다.'}},
      {l:'곤장 몇 대로 끝내고 눌러 앉힌다',st:'통',d:45,act:ok=>{if(ok){P.s.통+=2;return '그는 다시 창을 잡았다. 녹봉 일부를 그의 집으로 보내 주었다.'}P.s.매-=1;return '그는 사흘 뒤 다시 도망쳤다. 이번엔 당신이 문책을 받았다.'}}],
@@ -3176,7 +3261,7 @@ const EV=[
      {l:'변경으로 가서 새로 시작한다',act:()=>{const r=moveTo(pick(['량주','유주','병주']));setPath('군');P.fame=Math.max(0,P.fame-5);return `${jo(r,'로')} 유배되어 변경 수졸이 되었다.`}}],
  to:()=>{setPath('민');P.fame=Math.max(0,P.fame-8);return '관인을 빼앗겼다.'}},
 {id:'e_runaway',w:4,cd:7,when:()=>P.year>=160&&P.year<=260&&P.path==='관'&&P.age>=18,time:7,title:'도망 노비',han:'奴',hr:'노',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `호족 집에서 달아난 노비 ${jo(P.tmp.n,'이/가')} 붙잡혀 왔다. 등에 채찍 자국이 겹겹이다. 주인은 돌려 달라 한다.`},
+ text:()=>{P.tmp.n=mkName();return `호족 집에서 달아난 노비 ${jo(P.tmp.n,'이/가')} 붙잡혀 왔다. 등에 채찍 자국이 겹겹이다. 주인은 돌려 달라 한다.`},
  ch:[{l:'율대로 주인에게 돌려준다',act:()=>{P.wealth+=3;P.s.매-=1;return '그는 끌려가며 당신을 돌아보았다.'}},
      {l:'주인의 학대를 문서로 남겨 풀어 준다',st:'정',d:55,act:ok=>{if(ok){P.fame+=5;later('e_f_slave_return',rint(4,8),{n:P.tmp.n});return '그는 양인이 되었다. 호족이 당신을 노려보았다.'}P.fame=Math.max(0,P.fame-2);return '상관이 문서를 찢었다. 노비는 끌려갔다.'}},
      {l:'몰래 이름을 바꿔 둔전병으로 보낸다',st:'지',d:45,act:ok=>{if(ok){P.s.지+=1;later('e_f_slave_return',rint(4,8),{n:P.tmp.n});return '새 호적을 얻은 그가 먼 둔전으로 떠났다.'}hurt(20,'문책');return '서류가 들통나 문책을 받았다.'}}],
@@ -3195,7 +3280,7 @@ const EV=[
      {l:'혼인 대신 의형제를 맺는다',st:'매',d:45,act:ok=>{if(ok){P.wealth+=10;P.s.매+=2;return '술잔을 나누고 형님 아우가 되었다. 서로 체면이 섰다.'}return '그는 서운해하며 웃었다. 그 뒤로 거래만 남았다.'}}],
  to:()=>'답이 늦자 그는 다른 집안을 찾았다.'},
 {id:'e_concubine',w:4,cd:8,when:()=>P.year>=160&&P.year<=260&&P.path==='관'&&P.age>=18,time:7,title:'상관의 첩',han:'妾',hr:'첩',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `장터에서 사람을 때려 다치게 한 자가 잡혀 왔다. 상관이 아끼는 첩의 오라비 ${P.tmp.n}이다.`},
+ text:()=>{P.tmp.n=mkName();return `장터에서 사람을 때려 다치게 한 자가 잡혀 왔다. 상관이 아끼는 첩의 오라비 ${P.tmp.n}이다.`},
  ch:[{l:'율대로 곤장을 친다',st:'정',d:50,act:ok=>{if(ok){P.fame+=6;later('e_f_concubine_fall',rint(1,3),{n:P.tmp.n,g:1});return '백성들이 박수를 쳤다. 상관의 얼굴이 하얗게 굳었다.'}P.fame+=2;later('e_f_concubine_fall',rint(1,3),{n:P.tmp.n,g:1});return '곤장을 쳤다. 그날 저녁 상관이 당신을 불러 꾸짖었다.'}},
      {l:'조용히 풀어 준다',act:()=>{P.s.매-=1;later('e_f_concubine_scandal',rint(1,3),{n:P.tmp.n});return '첩이 고맙다는 말을 전해 왔다. 다친 백성은 이를 갈았다.'}},
      {l:'풀어 주고 첩에게 생색을 낸다',st:'매',d:45,act:ok=>{if(ok){P.fame+=3;if(P.rank<4&&R()<.5)P.rank++;later('e_f_concubine_scandal',rint(1,3),{n:P.tmp.n});return '상관이 당신을 편애하기 시작했다.'}later('e_f_concubine_scandal',rint(1,3),{n:P.tmp.n});return '첩은 당신을 아첨꾼이라 비웃었다.'}}],
@@ -3225,7 +3310,7 @@ const EV=[
      {l:'비 대신 곡식 나눔을 연다',req:()=>P.wealth>=15,rq:'1만 5천 전 필요',act:()=>{P.wealth-=12;P.fame+=6;return '비는 오지 않았지만 굶어 죽은 이도 없었다.'}}],
  to:()=>{P.fame=Math.max(0,P.fame-3);return '모인 사람들이 실망해 흩어졌다.'}},
 {id:'e_postfraud',w:3,cd:7,when:()=>P.year>=160&&P.year<=260&&P.path==='관'&&P.age>=18,time:7,title:'역참 비리',han:'驛',hr:'역',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `역참 장부에 말 스무 필이 있는데 마구간에는 일곱뿐이다. 역졸 ${jo(P.tmp.n,'이/가')} 역장이 말을 팔아먹었다고 귀띔했다.`},
+ text:()=>{P.tmp.n=mkName();return `역참 장부에 말 스무 필이 있는데 마구간에는 일곱뿐이다. 역졸 ${jo(P.tmp.n,'이/가')} 역장이 말을 팔아먹었다고 귀띔했다.`},
  ch:[{l:'정식으로 조사한다',st:'지',d:50,act:ok=>{if(ok){P.fame+=4;later('e_f_post_witness',rint(1,2),{n:P.tmp.n});return '말 판 기록을 찾아냈다. 역장이 하옥되기 직전이다. 증인은 역졸뿐이다.'}P.fame=Math.max(0,P.fame-2);return '역장이 장부를 불태웠다. 증거가 사라졌다.'}},
      {l:'역장과 몫을 나눈다',act:()=>{P.wealth+=8;P.flags.corrupt=1;later('e_f_post_courier',rint(1,3),{});return '말 판 값의 삼 할이 당신 몫이었다.'}},
      {l:'역졸에게 입단속을 시킨다',act:()=>{P.s.매-=1;return '역졸은 고개를 숙였다. 그 눈빛에 실망이 묻어 있었다.'}}],
@@ -3273,7 +3358,7 @@ const EV=[
      {l:'그 이름으로 다음 흉년 대비 의창을 만든다',st:'통',d:45,act:ok=>{if(ok){P.fame+=8;P.s.통+=2;return '집집이 곡식을 조금씩 모아 마을 창고를 지었다.'}P.wealth=Math.max(0,P.wealth-4);return '모은 곡식을 향리가 빼돌렸다.'}}],
  to:()=>{P.fame+=3;return '노인들이 당신 이름을 비석에 새겼다.'}},
 {id:'e_partner',w:4,cd:7,when:()=>P.year>=160&&P.year<=260&&P.path==='상'&&P.age>=18,time:7,title:'동업 제안',han:'伙',hr:'화',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);P.tmp.to=pick(['형주','익주','양주','량주','유주']);return `장터에서 사귄 ${jo(P.tmp.n,'이/가')} ${P.tmp.to}로 가는 상단에 밑천을 반씩 대자 한다. 이 할 이문은 장담한다고 한다.`},
+ text:()=>{P.tmp.n=mkName();P.tmp.to=pick(['형주','익주','양주','량주','유주']);return `장터에서 사귄 ${jo(P.tmp.n,'이/가')} ${P.tmp.to}로 가는 상단에 밑천을 반씩 대자 한다. 이 할 이문은 장담한다고 한다.`},
  ch:[{l:'가진 돈 절반을 댄다',req:()=>P.wealth>=10,rq:'1만 전 필요',act:()=>{const v=Math.floor(P.wealth*.5);P.wealth-=v;later('e_f_partner_back',rint(1,3),{n:P.tmp.n,to:P.tmp.to,v});return `${money(v)}을 맡겼다. 수레가 ${P.tmp.to} 쪽으로 떠났다.`}},
      {l:'직접 따라간다',st:'무',d:50,act:ok=>{if(ok){P.wealth+=10;P.s.무+=1;return `${P.tmp.to}까지 다녀왔다. 길에서 도적을 두 번 떼어 냈다. 이문이 남았다.`}hurt(25,'상단 습격');P.wealth=Math.floor(P.wealth*.7);return '고갯길에서 도적을 만났다. 짐 절반을 잃었다.'}},
      {l:'사람을 아직 모른다며 거절한다',act:()=>'그는 다른 사람을 찾아갔다. 그 사람이 돈을 벌었는지는 모른다.'}],
@@ -3304,7 +3389,7 @@ const EV=[
      {l:'가게를 접고 다른 고을로 간다',act:()=>{const r=moveRandom();P.wealth=Math.floor(P.wealth*.7);return `${jo(r,'로')} 몸을 피했다.`}}],
  to:()=>{hurt(20,'곤장');return '관리가 먼저 당신 가게에 들이닥쳤다.'}},
 {id:'e_toll',w:4,cd:5,when:()=>P.year>=160&&P.year<=260&&P.path==='상'&&P.age>=16,time:6,title:'관문 세금',han:'關',hr:'관',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `관문 수졸장 ${jo(P.tmp.n,'이/가')} 정해진 세금 말고 짐마다 한 꾸러미를 더 내라 한다. 뒤에 수레가 줄지어 섰다.`},
+ text:()=>{P.tmp.n=mkName();return `관문 수졸장 ${jo(P.tmp.n,'이/가')} 정해진 세금 말고 짐마다 한 꾸러미를 더 내라 한다. 뒤에 수레가 줄지어 섰다.`},
  ch:[{l:'달라는 대로 낸다',act:()=>{P.wealth=Math.max(0,P.wealth-5);return '관문을 넘었다. 이문이 반으로 줄었다.'}},
      {l:'율령을 들어 따진다',st:'정',d:50,act:ok=>{if(ok){P.fame+=4;later('e_f_toll_officer',rint(3,6),{n:P.tmp.n,g:0});return '뒤에 선 상인들이 거들었다. 수졸장이 얼굴을 붉히며 물러섰다.'}P.wealth=Math.max(0,P.wealth-8);hurt(10,'수졸의 창대');return '창대로 얻어맞고 갑절을 냈다.'}},
      {l:'술값을 따로 쥐여 주고 친해진다',st:'매',d:40,act:ok=>{P.wealth=Math.max(0,P.wealth-3);if(ok){later('e_f_toll_officer',rint(3,6),{n:P.tmp.n,g:1});return '수졸장이 당신 수레는 앞으로 그냥 넘겨 주겠다 했다.'}return '그는 술값만 챙겼다.'}},
@@ -3331,7 +3416,7 @@ const EV=[
      {l:'소금값을 내려 맞붙는다',req:()=>P.tmp.r>=.5,rq:'밀염이 돌 때만',act:()=>{P.wealth+=Math.round(P.tmp.q.v*.5);return '손해를 보고 팔았다. 보증금 반은 날렸다.'}}],
  to:()=>{P.wealth+=Math.round(P.tmp.q.v*.5);return '머뭇거리다 반만 건졌다.'}},
 {id:'e_usury',w:4,cd:5,when:()=>P.year>=160&&P.year<=260&&P.path==='상'&&P.wealth>=12,time:6,title:'고리대',han:'息',hr:'식',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `농부 ${jo(P.tmp.n,'이/가')} 세금 낼 돈을 빌리러 왔다. 땅 문서를 담보로 내밀며 이자는 원하는 대로 하라 한다.`},
+ text:()=>{P.tmp.n=mkName();return `농부 ${jo(P.tmp.n,'이/가')} 세금 낼 돈을 빌리러 왔다. 땅 문서를 담보로 내밀며 이자는 원하는 대로 하라 한다.`},
  ch:[{l:'해마다 갑절 이자로 빌려준다',act:()=>{P.wealth-=8;later('e_f_usury_due',rint(1,3),{n:P.tmp.n,hi:1});return '농부가 문서에 손도장을 찍었다.'}},
      {l:'낮은 이자로 빌려준다',act:()=>{P.wealth-=8;later('e_f_usury_due',rint(1,3),{n:P.tmp.n,hi:0});return '농부가 몇 번이나 고개를 숙였다.'}},
      {l:'돈이 없다며 돌려보낸다',act:()=>'그는 다른 대금업자를 찾아갔다.'}],
@@ -3355,7 +3440,7 @@ const EV=[
      {l:'그들 집부터 지키라 돌려보낸다',act:()=>{P.fame+=3;P.wealth=Math.floor(P.wealth*.8);return '당신 곳간 일부가 털렸다. 그들 집은 무사했다.'}}],
  to:()=>'그는 문 앞을 지키다 돌아갔다.'},
 {id:'e_apprentice',w:()=>P.focus==='social'?5:3,cd:10,when:()=>P.year>=160&&P.year<=260&&P.path==='상'&&P.age>=25,time:6,title:'견습 아이',han:'徒',hr:'도',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `고아 ${jo(P.tmp.n,'이/가')} 가게 앞을 떠나지 않는다. 주판알을 한 번 보고 따라 튕긴다. 일을 배우고 싶다고 한다.`},
+ text:()=>{P.tmp.n=mkName();return `고아 ${jo(P.tmp.n,'이/가')} 가게 앞을 떠나지 않는다. 주판알을 한 번 보고 따라 튕긴다. 일을 배우고 싶다고 한다.`},
  ch:[{l:'거두어 장사를 가르친다',act:()=>{P.wealth=Math.max(0,P.wealth-2);P.s.매+=1;later('e_f_apprentice_grown',rint(4,7),{n:P.tmp.n});return '아이는 새벽마다 가게 문을 열었다.'}},
      {l:'밥만 먹이고 잔심부름을 시킨다',act:()=>{P.wealth+=2;return '아이는 이태를 일하다 다른 가게로 옮겨 갔다.'}},
      {l:'쫓아낸다',act:()=>{P.s.매-=1;return '아이는 이튿날 건너편 가게 앞에 서 있었다.'}}],
@@ -3393,7 +3478,7 @@ const EV=[
      {l:'증서를 찢는다',req:()=>P.tmp.r>=.5,rq:'그 집이 몰락했을 때만',act:()=>{P.fame+=3;return '몇 해 뒤 사면된 그 집 아들이 당신을 찾았다는 소문이 들렸다.'}}],
  to:()=>'증서는 상자 속에서 누렇게 바랬다.'},
 {id:'e_hostage',w:4,cd:7,when:()=>P.year>=160&&P.year<=260&&P.path==='적'&&P.age>=16,time:7,title:'인질',han:'質',hr:'질',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `털어 온 수레에서 부잣집 아들 ${jo(P.tmp.n,'이/가')} 나왔다. 열다섯쯤 되었다. 졸개들은 몸값을 받자고 한다.`},
+ text:()=>{P.tmp.n=mkName();return `털어 온 수레에서 부잣집 아들 ${jo(P.tmp.n,'이/가')} 나왔다. 열다섯쯤 되었다. 졸개들은 몸값을 받자고 한다.`},
  ch:[{l:'몸값을 받아 낸다',st:'지',d:45,act:ok=>{if(ok){P.wealth+=20;later('e_f_hostage_hunt',rint(2,5),{n:P.tmp.n});return '금 두 근이 왔다. 아이를 산 아래 내려 주었다.'}hurt(25,'몸값 교환 매복');return '몸값을 받으러 간 자리에 관병이 숨어 있었다.'}},
      {l:'잘 먹여 그냥 돌려보낸다',act:()=>{P.s.매+=3;later('e_f_hostage_grown',rint(6,10),{n:P.tmp.n});return '아이는 산채 밥을 먹고 글자 몇 개를 졸개들에게 가르쳐 주고 떠났다.'}},
      {l:'산채에 두고 부려 먹는다',act:()=>{P.wealth+=3;P.s.매-=2;return '아이는 이태 뒤 도망쳤다.'}}],
@@ -3411,7 +3496,7 @@ const EV=[
      {l:'멀리 달아난다',act:()=>{const r=moveRandom();return `${jo(r,'로')} 떠났다. 등 뒤가 늘 서늘했다.`}}],
  to:()=>{hurt(30,'협객의 칼');return '어둠 속에서 칼이 들어왔다.'}},
 {id:'e_traitor',w:4,cd:7,when:()=>P.year>=160&&P.year<=260&&P.path==='적'&&P.age>=16,time:7,title:'배신자',han:'叛',hr:'반',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `${jo(P.tmp.n,'이/가')} 관에 산채 길을 알려 주고 돈을 받은 것이 드러났다. 졸개들이 그를 묶어 당신 앞에 꿇렸다.`},
+ text:()=>{P.tmp.n=mkName();return `${jo(P.tmp.n,'이/가')} 관에 산채 길을 알려 주고 돈을 받은 것이 드러났다. 졸개들이 그를 묶어 당신 앞에 꿇렸다.`},
  say:()=>[P.tmp.n,'노모가 옥에 갇혔소. 어쩔 수 없었소.'],
  ch:[{l:'졸개들 앞에서 목을 벤다',act:()=>{P.s.통+=2;P.s.매-=1;P.fame+=3;return '산채가 조용해졌다. 다시는 배신 이야기가 없었다.'}},
      {l:'노모 이야기를 믿고 살려 준다',act:()=>{P.s.매+=2;later('e_f_traitor_again',rint(1,4),{n:P.tmp.n});return '졸개들이 웅성거렸다. 그는 바닥에 이마를 찧었다.'}},
@@ -3437,7 +3522,7 @@ const EV=[
      {l:'산채를 옮긴다',act:()=>{const r=moveRandom();P.wealth=Math.floor(P.wealth*.7);return `${jo(r,'로')} 산채를 옮겼다.`}}],
  to:()=>{hurt(25,'횃불 든 장정들');return '횃불이 산채에 닿았다.'}},
 {id:'e_govspy',w:3,cd:7,when:()=>P.year>=160&&P.year<=260&&P.path==='적'&&P.rank>=1,time:7,title:'관군 첩자',han:'探',hr:'탐',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `새로 들어온 ${jo(P.tmp.n,'은/는')} 손바닥에 굳은살이 없다. 밤에 몰래 화살대에 무언가를 매어 날리는 것을 졸개가 보았다.`},
+ text:()=>{P.tmp.n=mkName();return `새로 들어온 ${jo(P.tmp.n,'은/는')} 손바닥에 굳은살이 없다. 밤에 몰래 화살대에 무언가를 매어 날리는 것을 졸개가 보았다.`},
  ch:[{l:'잡아서 매질한다',st:'무',d:35,act:ok=>{if(ok){P.wealth+=4;return '그가 관군 진채 위치를 불었다. 먼저 털러 갔다.'}P.s.매-=2;return '그는 혀를 깨물었다.'}},
      {l:'모른 척 거짓 정보를 흘린다',st:'지',d:50,act:ok=>{if(ok){P.fame+=6;return '관군이 엉뚱한 날 엉뚱한 골짜기를 쳤다.'}hurt(25,'관군 기습');return '그는 거짓을 알아채고 진짜를 보냈다.'}},
      {l:'불러서 편이 되라 꾄다',st:'매',d:50,act:ok=>{if(ok){later('e_f_govspy_double',rint(1,3),{n:P.tmp.n});return '그는 오래 생각하다 고개를 끄덕였다. 관군 품삯은 형편없다고 했다.'}hurt(20,'첩자의 단도');return '그는 단도를 휘두르고 달아났다.'}}],
@@ -3450,7 +3535,7 @@ const EV=[
  to:()=>{hurt(20,'토벌');return '소식을 미처 쓰지 못했다.'}},
 {id:'e_quit',w:()=>P.focus==='rest'?5:2,once:1,when:()=>P.year>=160&&P.year<=260&&P.path==='적'&&P.age>=35,time:7,title:'손을 씻다',han:'洗',hr:'세',
  text:()=>'칼 쥐던 손이 떨린다. 아랫마을에 빈집이 하나 났다. 이름을 바꾸고 내려가 밭을 갈 수도 있다.',
- ch:[{l:'이름을 바꾸고 산을 내려간다',act:()=>{setPath('민');P.hp=Math.min(100,P.hp+10);P.tmp.alias=pick(SURN)+pick(GIV);later('e_f_quit_found',rint(2,5),{a:P.tmp.alias});return `${jo(P.tmp.alias,'이/가')} 되어 산을 내려갔다. 손에 굳은살이 칼자국을 덮어 갔다.`}},
+ ch:[{l:'이름을 바꾸고 산을 내려간다',act:()=>{setPath('민');P.hp=Math.min(100,P.hp+10);P.tmp.alias=mkName();later('e_f_quit_found',rint(2,5),{a:P.tmp.alias});return `${jo(P.tmp.alias,'이/가')} 되어 산을 내려갔다. 손에 굳은살이 칼자국을 덮어 갔다.`}},
      {l:'재물을 챙겨 먼 고을로 간다',act:()=>{setPath('상');const r=moveRandom();P.wealth+=5;return `${jo(r,'로')} 가서 장사를 시작했다. 산채의 재물이 밑천이 되었다.`}},
      {l:'산에 남는다',act:()=>{P.s.통+=1;return '칼을 다시 쥐었다. 떨림은 술로 눌렀다.'}}],
  to:()=>'생각만 하다 또 한 해가 갔다.'},
@@ -3485,7 +3570,7 @@ const EV=[
      {l:'제사 따위 필요 없다고 한다',act:()=>{P.s.통-=1;return '졸개 몇이 몰래 제를 지냈다. 당신 몰래.'}}],
  to:()=>'졸개들이 저마다 다른 신을 모셨다.'},
 {id:'e_hometown',w:3,cd:8,when:()=>P.year>=160&&P.year<=260&&P.path==='적'&&P.age>=18,time:7,title:'고향 사람',han:'鄕',hr:'향',
- text:()=>{P.tmp.n=pick(SURN)+pick(GIV);return `털어 세운 행인 중에 고향 이웃 ${jo(P.tmp.n,'이/가')} 있다. 그가 복면 너머 당신 눈을 알아보았다.`},
+ text:()=>{P.tmp.n=mkName();return `털어 세운 행인 중에 고향 이웃 ${jo(P.tmp.n,'이/가')} 있다. 그가 복면 너머 당신 눈을 알아보았다.`},
  say:()=>[P.tmp.n,'너... 아무개네 아들 아니냐?'],
  ch:[{l:'짐을 돌려주고 보낸다',act:()=>{P.s.매+=2;later('e_f_hometown',rint(1,3),{n:P.tmp.n,g:1});return '그는 고개를 끄덕이고 떠났다. 무슨 말을 고향에 할지 모른다.'}},
      {l:'돈을 쥐여 주며 입을 막는다',req:()=>P.wealth>=5,rq:'5천 전 필요',act:()=>{P.wealth-=5;later('e_f_hometown',rint(1,3),{n:P.tmp.n,g:0});return '그는 돈을 받았다. 눈빛이 묘했다.'}},
@@ -3514,7 +3599,7 @@ const EV=[
 
 /* ===================== 살아 있는 세계: 고을·계절·가족·사람 ===================== */
 const SEASON=['봄','여름','가을','겨울'];
-const KIDN_F=['영','화','란','옥','희','정','숙','연','미','수'];
+const KIDN_F=['아영','소옥','문희','채란','옥란','월아','소희','정란','숙영','연화','미랑','수련','난영','옥정','혜란','영아','금옥','채희'];
 /* 그해 그 군에서 벌어진 큰 싸움 (정사 기준 대략의 장소) */
 const BATTLES=[[184,'거록군','광종 포위'],[184,'영천군','장사 전투'],[184,'남양군','완성 공방'],[190,'하남윤','낙양 소각'],[191,'하남윤','양인 전투'],
  [193,'동해군','서주 공략'],[194,'동군','복양 전투'],[195,'오군','강동 평정'],[197,'남양군','완성의 밤'],[198,'하비국','하비 수공'],[199,'하간국','역경 함락'],
@@ -3578,10 +3663,10 @@ function famYear(){
 /* ---------- 다시 만나는 사람들 ---------- */
 const NPCLINE={민:['요즘 농사가 영 시원찮네.','자네 얼굴을 보니 옛날 생각이 나는군.'],군:['전장에서 살아 돌아온 게 용하지.','자네도 칼밥을 먹는다고?'],
   관:['관청 일이 생각보다 고되네.','한잔하세, 옛 동무끼리.'],상:['돈은 돌고 도는 법이지.','좋은 물건이 있으면 말하게.'],적:['나를 고발할 텐가?','산 생활도 할 만하네.']};
-function mkNpc(role,b,o){return Object.assign({role,n:pick(SURN)+pick(GIV),b,path:null,rank:0,region:P.region,alive:1,fate:'',bond:role==='동무'?2:0,pseed:rint(0,9999),met:0,said:{}},o||{});}
+function mkNpc(role,b,o){return Object.assign({role,n:mkName(),b,path:null,rank:0,region:P.region,alive:1,fate:'',bond:role==='동무'?2:0,pseed:rint(0,9999),met:0,said:{}},o||{});}
 function npcTitle(n){
   if(!n.path)return '아이';if(n.path==='민')return '농부';if(n.path==='상')return n.rank>=2?'거상':'상인';
-  const L=RANKS[n.path];const t=L[Math.min(n.rank,L.length-1)];return n.path==='적'?'산적 '+t:ruler(n.region,P.year)+'의 '+t;
+  const L=RANKS[n.path];const t=L[Math.min(n.rank,L.length-1)];return n.path==='적'?'산적 '+t:facTitle(ruler(n.region,P.year),n.path,t,n.region);
 }
 function npcPt(n){
   const a=P.year-n.b;const k=a<15?'child':a>=58?'old':n.path==='적'?'thief':n.path==='군'?(n.rank>=4?'gen':'sol'):n.path==='관'?(n.rank>=5?'offH':'off'):n.path==='상'?'merch':'folk';
@@ -3603,8 +3688,8 @@ function npcYear(){
       if(P.age>=14)addLog(`${n.role} ${jo(n.n,'이/가')} ${war?`${where}에서 전사했다는`:'세상을 떠났다는'} 소식을 들었다.`,'key');continue;}
     const mx={군:8,관:7,적:3,상:3,민:0}[n.path];
     if(n.rank<mx&&R()<(n.role==='라이벌'?.24:.16)){n.rank++;
-      if(n.rank>=3&&P.age>=15&&!n.said[n.rank]){n.said[n.rank]=1;addLog(`${n.role} ${jo(n.n,'이/가')} ${jo(npcTitle(n),'이/가')} 되었다는 소문이 들린다.`,'flow');}}
-    if(R()<.04&&n.role!=='상관')n.region=pick(REGIONS).id;
+      if(n.rank>=4&&n.rank%2===0&&P.age>=15&&!n.said[n.rank]){n.said[n.rank]=1;addLog(`${n.role} ${jo(n.n,'이/가')} ${jo(npcTitle(n),'이/가')} 되었다는 소문이 들린다.`,'flow');}}
+    if(R()<.012&&n.role!=='상관')n.region=pick(REGIONS).id;
   }
 }
 function kind(n,what){(P.kind=P.kind||[]).push({n,what,y:P.year,repaid:0});}
@@ -3617,19 +3702,17 @@ function worldYear(){
     if(g.harvest==='흉년')addLog(`${P.gun}에 흉년이 들었다.`,'local');
     else if(g.harvest==='풍년'&&R()<.5)addLog(`${P.gun}에 풍년이 들었다.`,'local');
   }
+  if(P.path==='관'&&P.rank>=5){if(!P.gov||!P.gov.me)P.gov={n:P.name,trait:'평범',since:P.year,term:999,me:1};}else if(P.gov&&P.gov.me)P.gov=null;
   if(P.year>=160&&(!P.gov||P.year-P.gov.since>=P.gov.term)){
-    P.gov={n:pick(SURN)+pick(GIV),trait:pick(['청렴','청렴','평범','평범','탐욕']),since:P.year,term:rint(5,9)};
+    P.gov={n:mkName(),trait:pick(['청렴','청렴','평범','평범','탐욕']),since:P.year,term:rint(5,9)};
     if(P.age>=10)addLog(`새 태수 ${jo(P.gov.n,'이/가')} 부임했다. ${{청렴:'청렴하다는 평판이 따라왔다.',평범:'별다른 소문은 없다.',탐욕:'재물을 밝힌다는 소문이 먼저 왔다.'}[P.gov.trait]}`,'local');
   }
   famYear();npcYear();
 }
 /* ---------- 계절 ---------- */
-const SFLOW=[['보리싹이 파릇하게 올라왔다.','제비가 돌아왔다.','봄 밭을 갈았다.'],['장마가 졌다.','모기가 극성이다.','한낮 더위에 그늘을 찾았다.'],
-  ['감이 붉게 익었다.','기러기가 남쪽으로 날아갔다.','타작마당에서 도리깨질을 했다.'],['눈이 쌓였다.','화롯가에서 새끼를 꼬았다.','납일(臘日)에 조상께 제사를 지냈다.']];
-/* 어린 시절: 나이에 맞는 일과 부모의 삶 */
-const PARENT_WORK={소작농:['쟁기질하는','김매는','지주 댁에 소작료를 지고 가는'],자작농:['쟁기질하는','김매는','타작하는'],유민:['품을 팔러 나가는','남의 밭에서 이삭을 줍는'],
-  장인:['쇠를 두드리는','독을 굽는','나무를 깎는'],상인:['주판을 놓는','손님과 값을 흥정하는','소금 짐을 꾸리는'],아전:['장부를 적는','관복을 차려입고 현청에 나가는'],
-  '지방 호족':['소작인들에게 곡식을 나눠 주는','사병들을 훈련시키는'],'명문 사족':['손님들과 경전을 논하는','붓으로 글씨를 쓰는'],'한실 종친':['돗자리를 짜는','집안 족보를 펼쳐 보는']};
+const SFLOW=[['제비가 돌아왔다.','살구꽃이 피었다.','봄바람에 황사가 실려 왔다.'],['장마가 졌다.','모기가 극성이다.','한낮 더위에 그늘을 찾았다.','매미 소리가 요란하다.'],
+  ['기러기가 남쪽으로 날아갔다.','감이 붉게 익었다.','서리가 내렸다.'],['눈이 쌓였다.','납일(臘日)에 조상께 제사를 지냈다.','강이 얼어붙었다.']];
+const FARM=[['봄 밭을 갈았다.','보리싹이 파릇하게 올라왔다.','볍씨를 물에 담갔다.'],['논에 물을 댔다.','김을 맸다.','누에를 올렸다.'],['타작마당에서 도리깨질을 했다.','콩을 털었다.'],['화롯가에서 새끼를 꼬았다.','멍석을 짰다.']];
 function childFlow(){
   const a=P.age,F=P.fam||{},fa=F.fa&&F.fa.alive?F.fa:null,mo=F.mo&&F.mo.alive?F.mo:null,fr=(P.npcs||[]).find(n=>n.role==='동무'&&n.alive);
   const fname=fa?(P.status==='유민'?'아버지가':`아버지 ${jo(fa.n,'이/가')}`):'';
@@ -3648,7 +3731,8 @@ function seasonFlow(){
   if(P.age<14)return childFlow();
   const g=P.gun?gunState(P.gun,P.year):{};
   if(P.season===2&&P.path==='민')return g.harvest==='흉년'?'거둘 것이 거의 없다.':g.harvest==='풍년'?'곳간이 가득 찼다. 풍년이다.':'그럭저럭 추수를 마쳤다.';
-  return R()<.5?pick(SFLOW[P.season]):pick(FLOW[P.path]);
+  if(P.path==='민')return pick(R()<.45?FARM[P.season]:R()<.5?SFLOW[P.season]:FLOW.민);
+  return R()<.4?pick(SFLOW[P.season]):pick(FLOW[P.path]);
 }
 function epilogue(){
   const out=[];let s=0,d=0;
@@ -3714,8 +3798,8 @@ function applySeason(){
   const g=P.gun?gunState(P.gun,P.year):{};const farmer=P.path==='민';
   if(f==='work'){
     if(P.path==='민'){if(P.season===2)P.wealth+=g.harvest==='흉년'?1:g.harvest==='풍년'?6:3;gain('통',.06);}
-    else if(P.path==='군'){fg(.35);gain('통',.25);gain('무',.15);}
-    else if(P.path==='관'){fg(.4);gain('정',.3);}
+    else if(P.path==='군'){fg(.2);gain('통',.25);gain('무',.15);}
+    else if(P.path==='관'){fg(.22);gain('정',.3);}
     else if(P.path==='상'){P.wealth=Math.max(0,P.wealth+Math.round((R()*.09-.025)*Math.max(P.wealth,10)));gain('정',.15);}
     else if(P.path==='적'){P.wealth+=rint(0,4);fg(.3);if(R()<.06)hurt(rint(5,15),'관군의 화살');}
   }
@@ -3736,11 +3820,11 @@ function renderFocus(){
 /* ===================== 흐름 ===================== */
 const FLOW={
   child:['무럭무럭 자랐다.','개울에서 물고기를 잡았다.','홍역을 앓고 일어났다.','아버지 등에 업혀 장에 갔다.','동무들과 전쟁놀이를 했다.'],
-  민:['보리를 거두었다.','장마로 밭이 잠겼다.','세금을 바치고 나니 남은 게 없었다.','마을 잔치에서 취했다.','소가 송아지를 낳았다.','지붕을 새로 이었다.'],
-  군:['훈련으로 해가 저물었다.','변방 수비를 섰다.','동료가 탈영했다.','창날을 갈았다.','군량이 줄어 죽만 먹었다.'],
-  관:['장부와 씨름했다.','세곡을 거두러 다녔다.','상관의 생일 잔치에 불려 갔다.','새 율령을 고을에 붙였다.'],
-  상:['소금을 팔러 다녔다.','시세를 잘못 읽었다.','단골이 늘었다.','관문 세리와 실랑이를 했다.'],
-  적:['산채에서 겨울을 났다.','졸개 몇이 도망쳤다.','토벌대를 피해 거처를 옮겼다.'],
+  민:['세금을 바치고 나니 남은 게 없었다.','마을 잔치에서 취했다.','소가 송아지를 낳았다.','지붕을 새로 이었다.','이웃과 담장을 같이 쌓았다.','장날에 닭 두 마리를 팔았다.','부역에 불려 나가 성벽을 고쳤다.'],
+  군:['훈련으로 해가 저물었다.','창날을 갈았다.','군량이 줄어 죽만 먹었다.','진채 둘레에 녹각을 세웠다.','깃발을 손질했다.','밤새 조두(刁斗) 소리를 들으며 순찰을 돌았다.','신병들에게 창 쓰는 법을 가르쳤다.'],
+  관:['장부와 씨름했다.','세곡을 거두러 다녔다.','새 율령을 고을에 붙였다.','호구 조사를 다녔다.','옥사를 점검했다.','역참으로 가는 공문을 봉했다.'],
+  상:['소금을 팔러 다녔다.','시세를 잘못 읽었다.','단골이 늘었다.','관문 세리와 실랑이를 했다.','저울추를 새로 맞췄다.','객잔에서 다른 고을 시세를 들었다.'],
+  적:['산채에서 겨울을 났다.','졸개 몇이 도망쳤다.','토벌대를 피해 거처를 옮겼다.','망보는 자리를 바꿨다.','빼앗은 것을 나눴다.'],
 };
 function maxHp(){return Math.round(100-Math.max(0,P.age-40)*1.4);}
 
@@ -3753,15 +3837,16 @@ function newLife(){
   if(R()<.02){gifted=pick(SK);s[gifted]=Math.min(99,s[gifted]+30);birthP*=.02;}
   for(const k in s)s[k]=clamp(s[k],1,99);
   const surname=st.id==='한실 종친'?'유':pick(SURN);
-  P={surname,name:surname+pick(GIV),zi:null,born,year:born,age:0,region:rg.id,status:st.id,s,hp:100,wealth:st.w,fame:st.id==='명문 사족'?6:0,
+  P={surname,name:surname+given(surname),zi:null,born,year:born,age:0,region:rg.id,status:st.id,s,hp:100,wealth:st.w,fame:st.id==='명문 사족'?6:0,
      path:'민',rank:0,married:0,children:[],flags:{},done:[],cool:{},log:[],alive:true,birthP,luck:1,deathCause:null,tmp:{},gifted};
   P.traits=[];if(R()<.6)P.traits.push(pick(TRAITS).id);if(R()<.15){const o=TRAITS.filter(x=>!P.traits.includes(x.id));P.traits.push(pick(o).id);}
   P.bonds={};P.seen=[];P.lordFig=null;P.pseed=rint(0,9999);P.season=3;P.evSeason=rint(0,3);P.kids=[];P.queue=[];P.kind=[];P.gun=pick(gunsOf(rg.id))[0];P.county=P.gun;
   if(R()<.004){const L=pick(LEG);Object.assign(P,{legend:L.n,name:L.n,surname:L.s,zi:L.zi,born:L.b,year:L.b,region:L.r,gun:L.g,county:L.g,status:L.st,s:Object.assign({},L.S),traits:L.t.slice(),wealth:STATUS.find(x=>x.id===L.st).w,birthP:1/5.6e7,gifted:null});}
+  P.home=P.region+' '+P.gun;
   addLog('','register',{html:registerHTML()});
   P.npcs=[mkNpc('동무',P.born+rint(-2,2)),mkNpc('라이벌',P.born+rint(-1,1))];
   if(P.legend){const z=jo(P.zi,'이/가');addLog(`${P.region} ${P.gun}의 ${P.status} 집안에서 ${jo(P.name,'이/가')} 태어났다. 훗날 ${z.endsWith('가')?P.zi:z}라 불릴 아이다.`,'birth');return;}
-  addLog(`${rg.id}(${rg.han})의 ${st.id} 집안에서 ${jo(P.name,'이/가')} 태어났다.${gifted?` 타고난 ${STK[gifted]}(${STN[gifted]})의 재능이 있다.`:''}${P.traits.length?` 특기: ${P.traits.join(', ')}.`:''}`,'birth');
+  addLog(`${rg.id} ${P.gun}의 ${st.id} 집안에서 ${jo(P.name,'이/가')} 태어났다.${gifted?` 타고난 ${STK[gifted]}(${STN[gifted]})의 재능이 있다.`:''}${P.traits.length?` 특기: ${P.traits.join(', ')}.`:''}`,'birth');
 }
 
 function addLog(t,k,extra){
@@ -3788,12 +3873,12 @@ function tick(){
   if(P.season===0){
     P.year++;P.age++;
     if(eraName(P.year)!==eraName(P.year-1))addLog(`시대가 바뀌었다. ${eraName(P.year)}의 시대.`,'world');
-    if(WORLD[P.year])addLog(WORLD[P.year],'world');
     dueLater();
     worldYear();
     yearly();
     P.evSeason=rint(0,3);
   }
+  if(P.alive&&P.season===3&&P.age>=6)for(const w of [WORLD[P.year]].concat(NEWS[P.year]||[]))if(w)addLog(w,'world');
   if(P.alive&&P.season===2&&P.flags.debt){P.wealth=Math.max(0,P.wealth-P.flags.debt);addLog(`가을걷이 뒤 봄에 빌린 장리쌀 ${money(P.flags.debt)}어치를 갚았다.`,'flow');P.flags.debt=0;}
   if(P.alive){
     let ev=null;
@@ -3801,7 +3886,7 @@ function tick(){
     if(P.alive)applySeason();
     if(!ev&&(P.age>=16?R()<.55:P.season===P.evSeason))ev=pickEvent();
     if(ev){render();return showEvent(ev);}
-    if(R()<(P.age<14?.12:.18))addLog(seasonFlow(),'flow');
+    if(R()<(P.age<14?.12:.18)){const fl=seasonFlow();if(!P.log.slice(-30).some(e=>e.k==='flow'&&e.t===fl))addLog(fl,'flow');}
   }
   render();
   if(!P.alive)return finish();
@@ -3826,7 +3911,7 @@ function yearly(){
     if(R()<p*((P.traits||[]).includes('무병장수')?.6:1)||P.age>=100)return die2(P.age>=58?'천수':'병');
   }
   if(['군','관'].includes(P.path)&&P.age>=15){const g=P.fame-(P.fameMark==null?P.fame:P.fameMark);
-    if(g>=3){const gift=Math.min(15,Math.round(g/2));P.wealth=Math.max(0,P.wealth+gift);addLog(`논공행상. 올해 공적 ${g}. 질(秩) ${SAL[P.path][P.rank]}, 하사품으로 ${money(gift)}을 받았다.`,'key');}}
+    if(g>=6){const gift=Math.min(15,Math.round(g/2));P.wealth=Math.max(0,P.wealth+gift);addLog(`논공행상. 올해 공적 ${g}. 질(秩) ${SAL[P.path][P.rank]}, 하사품으로 ${money(gift)}을 받았다.`,'key');}}
   P.fameMark=P.fame;
   if(P.lordFig&&['군','관'].includes(P.path)){const f=FIG.find(x=>x.id===P.lordFig);const at=f&&f.at.find(([a,b])=>P.year>=a&&P.year<=b);
     if(at&&at[2]!==P.region){moveTo(at[2]);addLog(`주군 ${jo(P.lordFig,'을/를')} 따라 ${jo(P.region,'로')} 옮겼다.`,'flow');}}
@@ -3850,16 +3935,14 @@ function trackBest(){const a=achP();if(!P.best||a<P.best.p)P.best={p:a,t:fullTit
 function lordBond(){if(!P.lordFig)return 0;return Math.max(0,...FIG.filter(f=>(f.lord||f.id)===P.lordFig).map(f=>P.bonds[f.id]||0));}
 function promote(yearly){
   trackBest();
-  const th=TH[P.path];if(!th)return;
-  while(P.rank<th.length-1&&P.fame>=th[P.rank+1]){
-    const nx=P.rank+1;
-    const sp=SEATP[P.path];if(sp&&sp[nx]!=null){
-      if(!yearly)break;
-      if(nx===9&&lordBond()<4){if(!P.flags.capNote){P.flags.capNote=1;addLog(`명성은 충분하지만 ${RANKS[P.path][9]}의 자리는 주군의 깊은 신임 없이는 오를 수 없다.`,'flow');}break;}
-      if(R()>sp[nx])break;
+  const th=TH[P.path];
+  if(th&&yearly&&P.rank<th.length-1&&P.fame>=th[P.rank+1]){
+    const nx=P.rank+1,sp=SEATP[P.path];let ok=true;
+    if(sp&&sp[nx]!=null){
+      if(nx===9&&lordBond()<4){ok=false;if(!P.flags.capNote){P.flags.capNote=1;addLog(`명성은 충분하지만 ${RANKS[P.path][9]}의 자리는 주군의 깊은 신임 없이는 오를 수 없다.`,'flow');}}
+      else if(R()>sp[nx])ok=false;
     }
-    P.rank++;trackBest();addLog(`${jo(fullTitle(),'로')} 올랐다.`,'key');
-    if(sp&&sp[nx]!=null)break;
+    if(ok){P.rank++;trackBest();addLog(`${jo(fullTitle(),'로')} 올랐다.`,'key');}
   }
   if(!P.zi&&P.fame>=20){P.zi=pick(ZI1)+pick(ZI2);const z=jo(P.zi,'이/가');addLog(`이름이 알려져 사람들이 자(字)를 ${z.endsWith('가')?P.zi:z}라 불렀다.`,'flow');}
 }
@@ -3875,7 +3958,8 @@ function pickEvent(){
   if(s)return s;
   if(P.age<12)return null;
   if(R()>.5)return null;
-  const pool=EV.filter(e=>!e.prio&&(e.season==null||e.season===P.season)&&!(e.once&&has(e.id))&&(P.cool[e.id]||0)<=P.year&&e.when());
+  const capped=['군','관'].includes(P.path);
+  const pool=EV.filter(e=>!e.prio&&!(capped&&RANKCAP[e.id]!=null&&P.rank>RANKCAP[e.id])&&(e.season==null||e.season===P.season)&&!(e.once&&has(e.id))&&(P.cool[e.id]||0)<=P.year&&e.when());
   if(!pool.length)return null;
   return wpick(pool,e=>(typeof e.w==='function'?e.w():(e.w||1))*focusMul(e.id));
 }
@@ -3883,7 +3967,7 @@ function pickEvent(){
 /* ===================== 사건 화면 ===================== */
 let curChoices=[];
 function showEvent(e){
-  curEv=e;P.done.push(e.id);if(!e.prio)P.cool[e.id]=P.year+(e.cd||4);
+  curEv=e;P.done.push(e.id);if(!e.prio)P.cool[e.id]=P.year+(e.cd||CD_DEF[e.id]||7);P.tmp._lc=(P.later||[]).length;
   $('#evSeal').innerHTML=`${e.han}<small>${e.hr||HR[e.han]||''}</small>`;$('#evTitle').textContent=e.title;
   $('#evText').innerHTML=gl(esc(e.text()));$('#vs').hidden=true;
   const sy=(e.say||SAY[e.id])?(e.say||SAY[e.id])():null;$('#say').hidden=!sy;
@@ -3935,7 +4019,12 @@ function resolve(i){
   }
   finishEvent(e,choice,txt,late);
 }
+const CD_DEF={battle:2,field:2,sick:5,bandit:5,trade:3,raid:2,conscript:4,lawsuit:5,debate:4};
+/* 이 계급을 넘으면 뜨지 않는 사건 (장군이 보초를 서거나 태수가 서리 일을 하지 않도록) */
+const RANKCAP={e_grainskim:3,e_lastwill:3,e_spysuspect:3,e_leave:4,e_warhorse:5,e_deserter:3,e_letters:2,d_chupu:3,conscript:9,
+  e_census:4,e_runaway:4,e_concubine:4,e_rainrite:4,e_postfraud:4,e_casebook:4,e_relief:4,e_petition:4,lawsuit:4,graft:4,gov_greedy:4,d_guosuo:4};
 function finishEvent(e,choice,txt,late){
+  if(!e.prio&&(P.later||[]).length>(P.tmp._lc||0))P.cool[e.id]=P.year+25;
   for(const k in P.s)P.s[k]=clamp(Math.round(P.s[k]),1,99);
   P.wealth=Math.max(0,Math.round(P.wealth));P.fame=Math.max(0,Math.round(P.fame));
   addLog(txt,'event',{title:e.title,choice,late,key:true});
@@ -4003,7 +4092,7 @@ function finish(){
     <div class="odds"><span class="n">${kor(odds)}명 중 한 사람</span><span class="g">${gname} · ${gdesc}</span><span class="g">출생과 운 ${kor(oB)}명 중 한 명 · 출세(${esc(P.best.t)}) ${kor(oA)}명 중 한 명</span></div>
     <div class="card-radar">${radar(P.s,true)}</div>
     <dl class="facts">
-      <dt>고향</dt><dd>${esc(P.region)} ${HAN[P.region]}</dd>
+      <dt>고향</dt><dd>${esc(P.home||P.region)}</dd>
       <dt>출신</dt><dd>${esc(P.status)} (${(STATUS.find(s=>s.id===P.status).p*100).toString().replace(/(\.\d{2})\d+/,'$1')}%)</dd>
       ${P.hon&&P.hon.length?`<dt>칭호</dt><dd>${esc(P.hon.map(h=>h.t).join(', '))}</dd>`:''}
       <dt>최후</dt><dd>${gl(esc(finalT))}</dd>
