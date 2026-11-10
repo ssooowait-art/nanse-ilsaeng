@@ -8,17 +8,17 @@
 :root{
   --paper:#E3E7DE; --paper-2:#D4DACD; --slip:#EDF0E8; --ink:#1B211E; --ink-soft:#545F58; --line:#B5BEB1;
   --bronze:#2B675C; --bronze-soft:#2b675c22; --blood:#9B2921; --brass:#86651F;
-  --m-han:#BCC0B5; --m-wei:#4F6FA8; --m-shu:#4E8F5A; --m-wu:#B5483A; --m-yuan:#C49A3A; --m-jin:#7D5BA6; --m-lb:#5E9C9A; --m-lz:#A0784E; --m-dong:#6B5B4E; --m-ys:#C07AA0; --m-oth:#8C8F6A;
+  --m-han:#BCC0B5; --m-wei:#4F6FA8; --m-shu:#4E8F5A; --m-wu:#B5483A; --m-yuan:#C49A3A; --m-jin:#7D5BA6; --m-lb:#5E9C9A; --m-lz:#A0784E; --m-dong:#6B5B4E; --m-ys:#C07AA0; --m-oth:#8C8F6A; --sea:#C3D1CE; --river:#4A7F93;
   --f-disp:'Song Myung','Nanum Myeongjo','Batang',serif;
   --f-body:'Gowun Batang','Noto Serif KR','Batang',serif;
   --f-ui:'Gowun Dodum','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --paper:#111613; --paper-2:#19201C; --slip:#161C19; --ink:#DCE2D8; --ink-soft:#97A39A; --line:#2E3832;
-  --bronze:#6CB4A3; --bronze-soft:#6cb4a322; --blood:#E2665B; --brass:#D2AA5B; --m-han:#3A423D; --m-wei:#6F8FCB; --m-shu:#6DB37A; --m-wu:#D7695A; --m-yuan:#D9B45A; --m-jin:#A487CC; --m-lb:#7CC1BE; --m-lz:#C29B6E; --m-dong:#9A887A; --m-ys:#DC97BC; --m-oth:#AAB081; color-scheme:dark}}
+  --bronze:#6CB4A3; --bronze-soft:#6cb4a322; --blood:#E2665B; --brass:#D2AA5B; --m-han:#3A423D; --m-wei:#6F8FCB; --m-shu:#6DB37A; --m-wu:#D7695A; --m-yuan:#D9B45A; --m-jin:#A487CC; --m-lb:#7CC1BE; --m-lz:#C29B6E; --m-dong:#9A887A; --m-ys:#DC97BC; --m-oth:#AAB081; --sea:#0B1515; --river:#5E9DB0; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#111613; --paper-2:#19201C; --slip:#161C19; --ink:#DCE2D8; --ink-soft:#97A39A; --line:#2E3832;
-  --bronze:#6CB4A3; --bronze-soft:#6cb4a322; --blood:#E2665B; --brass:#D2AA5B; --m-han:#3A423D; --m-wei:#6F8FCB; --m-shu:#6DB37A; --m-wu:#D7695A; --m-yuan:#D9B45A; --m-jin:#A487CC; --m-lb:#7CC1BE; --m-lz:#C29B6E; --m-dong:#9A887A; --m-ys:#DC97BC; --m-oth:#AAB081; color-scheme:dark}
+  --bronze:#6CB4A3; --bronze-soft:#6cb4a322; --blood:#E2665B; --brass:#D2AA5B; --m-han:#3A423D; --m-wei:#6F8FCB; --m-shu:#6DB37A; --m-wu:#D7695A; --m-yuan:#D9B45A; --m-jin:#A487CC; --m-lb:#7CC1BE; --m-lz:#C29B6E; --m-dong:#9A887A; --m-ys:#DC97BC; --m-oth:#AAB081; --sea:#0B1515; --river:#5E9DB0; color-scheme:dark}
 
 [hidden]{display:none!important}
 html,body{height:100%}
@@ -264,7 +264,7 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
     </div>
     <div class="atlas">
       <h2>연도별 세력도</h2>
-      <canvas class="mapcv" id="titleMap" width="516" height="404" role="img" aria-label="연도별 세력 지도"></canvas>
+      <canvas class="mapcv" id="titleMap" width="1032" height="808" role="img" aria-label="연도별 세력 지도"></canvas>
       <div class="atlas-ctl">
         <button class="tool" id="playBtn" type="button">재생</button>
         <input type="range" id="yr" min="184" max="280" value="208" step="1" aria-label="연도">
@@ -299,7 +299,7 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
     </div>
     <div class="map-pane" id="mapPane" hidden>
       <h2 id="mapCap">세력도</h2>
-      <canvas class="mapcv" id="gameMap" width="516" height="404" role="img" aria-label="현재 세력 지도"></canvas>
+      <canvas class="mapcv" id="gameMap" width="1032" height="808" role="img" aria-label="현재 세력 지도"></canvas>
       <div class="legend" id="gameLegend"></div>
     </div>
     <ol class="chron" id="log" aria-live="polite"></ol>
@@ -442,31 +442,104 @@ function mapGrid(){
     g[y*MW+x]=b;}
   return MGRID=g;
 }
+/* 지도: 군 치소를 씨앗으로 한 보로노이 칸을 벡터로 그린다. 바다·해안·강·종이 질감을 얹는다 */
+const RIVERS=[
+ {n:'황하',w:2.4,lab:[106.2,39.6],pts:[[99.5,35.5],[101.8,35.9],[103.8,36.1],[105.2,36.9],[105.9,37.5],[106.4,38.5],[107,40.2],[109,40.6],[111.2,40.2],[111.3,39],[110.6,37.5],[110.4,35.6],[110.3,34.6],[111.5,34.85],[112.6,34.9],[113.7,34.95],[114.6,35.3],[115.5,35.9],[116.3,36.7],[117,37.4],[117.9,38]]},
+ {n:'장강',w:2.6,lab:[109.6,31.25],pts:[[99.2,28.6],[100.4,27.1],[102,26.5],[103.6,28.2],[104.6,28.8],[105.4,28.9],[106.6,29.6],[107.9,30.2],[109.5,31],[110.5,30.9],[111.3,30.7],[112.2,30.3],[113,29.5],[114.3,30.6],[115.4,29.9],[116,29.75],[117,30.5],[118.4,31.4],[118.8,32.1],[119.6,32.25],[120.6,31.9],[121.6,31.5]]},
+ {n:'한수',w:1.5,lab:[109.4,32.95],pts:[[106.8,33.1],[108.5,32.75],[110.8,32.6],[111.8,32.3],[112.2,32],[112.6,31.2],[113.4,30.6],[114.3,30.6]]},
+ {n:'회수',w:1.5,lab:[116.2,32.95],pts:[[113.3,32.6],[114.6,32.4],[115.8,32.6],[116.8,32.9],[118,33.3],[119.2,33.8],[120.2,34.05]]},
+ {n:'위수',w:1.3,lab:null,pts:[[104.6,35],[106.5,34.45],[108,34.3],[109.5,34.6],[110.3,34.6]]},
+];
+const LAKES=[[112.9,29.3,1.0,.55],[116.3,29.1,.55,.7]];
+let CELLS=null,NOISE=null,WAVE=null;
+function mapCells(){
+  if(CELLS)return CELLS;
+  const S=GUN.map(x=>px(x[2],x[3]));
+  CELLS=S.map((a,i)=>{
+    let poly=[[-40,-40],[MW+40,-40],[MW+40,MH+40],[-40,MH+40]].map(p=>({x:p[0],y:p[1],lab:-1}));
+    for(let j=0;j<S.length&&poly.length>=3;j++){
+      if(j===i)continue;const b=S[j],mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,dx=b[0]-a[0],dy=b[1]-a[1];
+      const f=p=>(p.x-mx)*dx+(p.y-my)*dy,out=[];
+      for(let k=0;k<poly.length;k++){
+        const P=poly[k],Q=poly[(k+1)%poly.length],fp=f(P),fq=f(Q);
+        const I=()=>{const t=fp/(fp-fq);return {x:P.x+(Q.x-P.x)*t,y:P.y+(Q.y-P.y)*t};};
+        if(fp<=0){out.push({x:P.x,y:P.y,lab:P.lab});if(fq>0){const q=I();q.lab=j;out.push(q);}}
+        else if(fq<=0){const q=I();q.lab=P.lab;out.push(q);}
+      }
+      poly=out;
+    }
+    return poly;
+  });
+  return CELLS;
+}
+function smoothPath(ctx,pts){
+  const P=pts.map(p=>px(p[0],p[1]));ctx.beginPath();ctx.moveTo(P[0][0],P[0][1]);
+  for(let i=1;i<P.length-1;i++){const mx=(P[i][0]+P[i+1][0])/2,my=(P[i][1]+P[i+1][1])/2;ctx.quadraticCurveTo(P[i][0],P[i][1],mx,my);}
+  const L=P[P.length-1];ctx.lineTo(L[0],L[1]);
+}
+function texPatterns(ctx,ink){
+  if(!NOISE){NOISE=document.createElement('canvas');NOISE.width=NOISE.height=160;const n=NOISE.getContext('2d');let sd=7;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+    for(let i=0;i<1400;i++){n.fillStyle=`rgba(0,0,0,${(rnd()*.09).toFixed(3)})`;n.fillRect(rnd()*160,rnd()*160,1+rnd()*1.5,1+rnd()*1.5);}
+    for(let i=0;i<500;i++){n.fillStyle=`rgba(255,255,255,${(rnd()*.12).toFixed(3)})`;n.fillRect(rnd()*160,rnd()*160,1.5,1.5);}}
+  return ctx.createPattern(NOISE,'repeat');
+}
 function drawMap(cv,year,here,legend){
-  const g=mapGrid(),ctx=cv.getContext('2d'),cs=getComputedStyle(document.documentElement);
-  const facs=GUN.map(x=>rulerG(x,year)),cols=facs.map(f=>hexc(cs.getPropertyValue('--m-'+famOf(f))));
-  const ink=hexc(cs.getPropertyValue('--ink')),paper=cs.getPropertyValue('--paper').trim();
-  const img=ctx.createImageData(MW,MH),d=img.data;
-  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){
-    const i=y*MW+x,v=g[i];if(v===255)continue;const o=i*4;
-    const ns=[x+1<MW?g[i+1]:255,y+1<MH?g[i+MW]:255,x>0?g[i-1]:255,y>0?g[i-MW]:255];
-    let lvl=0;for(const n of ns){if(n===v)continue;const l=(n===255||facs[n]!==facs[v])?3:(GUN[n][1]!==GUN[v][1]?2:1);if(l>lvl)lvl=l;}
-    if(lvl>=2){d[o]=ink[0];d[o+1]=ink[1];d[o+2]=ink[2];d[o+3]=lvl===3?230:110;}
-    else{const c=cols[v],k=lvl?.82:1;d[o]=c[0]*k;d[o+1]=c[1]*k;d[o+2]=c[2]*k;d[o+3]=228;}
-  }
-  ctx.clearRect(0,0,MW,MH);ctx.putImageData(img,0,0);
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
-  const blood=cs.getPropertyValue('--blood').trim(),brass=cs.getPropertyValue('--brass').trim();let nWar=0,nFam=0;const bts=[];
+  const ctx=cv.getContext('2d'),cs=getComputedStyle(document.documentElement),tok=n=>cs.getPropertyValue(n).trim();
+  const sc=cv.width/MW;ctx.setTransform(sc,0,0,sc,0,0);ctx.clearRect(0,0,MW,MH);
+  const cells=mapCells(),facs=GUN.map(x=>rulerG(x,year));
+  const ink=tok('--ink'),paper=tok('--paper'),sea=tok('--sea'),river=tok('--river'),blood=tok('--blood'),brass=tok('--brass');
+  /* 바다와 물결 */
+  ctx.fillStyle=sea;ctx.fillRect(0,0,MW,MH);
+  ctx.save();ctx.strokeStyle=ink;ctx.globalAlpha=.09;ctx.lineWidth=.7;
+  for(let y=6;y<MH;y+=10){ctx.beginPath();for(let x=-4;x<=MW+4;x+=5)ctx.lineTo(x,y+Math.sin((x+y*2.3)/8)*1.4);ctx.stroke();}
+  ctx.restore();
+  const coast=new Path2D();OUT.forEach(([lo,la],k)=>{const [x,y]=px(lo,la);k?coast.lineTo(x,y):coast.moveTo(x,y);});coast.closePath();
+  ctx.save();ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=14;ctx.shadowOffsetY=3;ctx.fillStyle=paper;ctx.fill(coast);ctx.restore();
+  /* 땅: 세력 색, 군마다 조금씩 다른 농담 */
+  ctx.save();ctx.clip(coast);
+  const paths=cells.map(poly=>{const p=new Path2D();poly.forEach((v,k)=>k?p.lineTo(v.x,v.y):p.moveTo(v.x,v.y));p.closePath();return p;});
+  cells.forEach((poly,i)=>{if(poly.length<3)return;ctx.fillStyle=tok('--m-'+famOf(facs[i]));ctx.fill(paths[i]);
+    const h=hstr(GUN[i][0])%5;ctx.fillStyle=h<2?`rgba(255,255,255,${.05+h*.03})`:`rgba(0,0,0,${.02+(h-2)*.02})`;ctx.fill(paths[i]);});
+  ctx.fillStyle=texPatterns(ctx,ink);ctx.fillRect(0,0,MW,MH);
+  /* 경계: 군(옅게) → 주(점선) → 세력(굵게) */
+  const lv=[new Path2D(),new Path2D(),new Path2D()];
+  cells.forEach((poly,i)=>poly.forEach((v,k)=>{const j=v.lab;if(j<=i)return;const w=poly[(k+1)%poly.length];
+    const l=facs[i]!==facs[j]?2:GUN[i][1]!==GUN[j][1]?1:0;lv[l].moveTo(v.x,v.y);lv[l].lineTo(w.x,w.y);}));
+  ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.strokeStyle=ink;ctx.globalAlpha=.16;ctx.lineWidth=.6;ctx.stroke(lv[0]);
+  ctx.globalAlpha=.38;ctx.lineWidth=.9;ctx.setLineDash([3,2.5]);ctx.stroke(lv[1]);ctx.setLineDash([]);
+  ctx.globalAlpha=.25;ctx.lineWidth=4.5;ctx.stroke(lv[2]);ctx.globalAlpha=.85;ctx.lineWidth=1.6;ctx.stroke(lv[2]);ctx.globalAlpha=1;
+  /* 강과 호수 */
+  ctx.strokeStyle=river;
+  for(const r of RIVERS){smoothPath(ctx,r.pts);ctx.globalAlpha=.25;ctx.lineWidth=r.w+2.5;ctx.stroke();ctx.globalAlpha=.9;ctx.lineWidth=r.w;ctx.stroke();}
+  ctx.globalAlpha=.85;ctx.fillStyle=river;for(const [lo,la,rx,ry] of LAKES){const [x,y]=px(lo,la);ctx.beginPath();ctx.ellipse(x,y,rx*MK/2,ry*MK/2,-.3,0,Math.PI*2);ctx.fill();}
+  ctx.globalAlpha=1;ctx.restore();
+  /* 해안선 두 줄 */
+  ctx.strokeStyle=ink;ctx.lineJoin='round';ctx.globalAlpha=.85;ctx.lineWidth=1.5;ctx.stroke(coast);
+  ctx.save();ctx.clip(coast);ctx.globalAlpha=.18;ctx.lineWidth=5;ctx.stroke(coast);ctx.restore();ctx.globalAlpha=1;
+  /* 전란·흉년·전투 */
+  let nWar=0,nFam=0;const bts=[];
   for(const x of GUN){const st=gunState(x[0],year);const [cx,cy]=px(x[2],x[3]);
-    if(st.war){nWar++;ctx.strokeStyle=blood;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(cx-5,cy-5);ctx.lineTo(cx+5,cy+5);ctx.moveTo(cx+5,cy-5);ctx.lineTo(cx-5,cy+5);ctx.stroke();}
-    else if(st.harvest==='흉년'){nFam++;ctx.strokeStyle=brass;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(cx,cy,4.5,0,Math.PI*2);ctx.stroke();}
+    if(st.war){nWar++;ctx.fillStyle=blood;ctx.beginPath();ctx.arc(cx,cy,4.2,0,Math.PI*2);ctx.fill();ctx.strokeStyle=paper;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(cx-2.2,cy-2.2);ctx.lineTo(cx+2.2,cy+2.2);ctx.moveTo(cx+2.2,cy-2.2);ctx.lineTo(cx-2.2,cy+2.2);ctx.stroke();}
+    else if(st.harvest==='흉년'){nFam++;ctx.strokeStyle=brass;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,3.8,0,Math.PI*2);ctx.stroke();}
     if(st.battle)bts.push([cx,cy,st.battle]);}
-  ctx.font="bold 17px 'Gowun Dodum', 'Apple SD Gothic Neo', sans-serif";ctx.lineWidth=4;ctx.strokeStyle=paper;ctx.fillStyle=`rgb(${ink})`;
-  for(const r in RLAB){const [x,y]=px(...RLAB[r]);ctx.strokeText(r,x,y);ctx.fillText(r,x,y);}
-  ctx.font="bold 14px 'Gowun Dodum', sans-serif";ctx.fillStyle=blood;for(const [cx,cy,t] of bts){ctx.strokeText(t,cx,cy+16);ctx.fillText(t,cx,cy+16);}ctx.fillStyle=`rgb(${ink})`;
-  if(here&&GUNMAP[here]){const [x,y]=px(GUNMAP[here][2],GUNMAP[here][3]);ctx.beginPath();ctx.arc(x,y,6.5,0,Math.PI*2);ctx.fillStyle=cs.getPropertyValue('--blood').trim();ctx.fill();ctx.lineWidth=3;ctx.strokeStyle=paper;ctx.stroke();}
+  /* 글자: 강 이름, 주 이름(한글+한자), 전투 이름 */
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.strokeStyle=paper;
+  ctx.font="italic 11px 'Gowun Batang', serif";ctx.fillStyle=river;ctx.lineWidth=3;
+  for(const r of RIVERS)if(r.lab){const [x,y]=px(...r.lab);ctx.strokeText(r.n,x,y);ctx.fillText(r.n,x,y);}
+  for(const r in RLAB){const [x,y]=px(...RLAB[r]);
+    ctx.font="18px 'Song Myung', 'Gowun Batang', serif";ctx.lineWidth=4.5;ctx.fillStyle=ink;ctx.strokeText(r,x,y-3);ctx.fillText(r,x,y-3);
+    if(HAN[r]){ctx.font="10px 'Song Myung', serif";ctx.lineWidth=3;ctx.globalAlpha=.75;ctx.strokeText(HAN[r],x,y+11);ctx.fillText(HAN[r],x,y+11);ctx.globalAlpha=1;}}
+  ctx.font="bold 12px 'Gowun Dodum', sans-serif";ctx.fillStyle=blood;ctx.lineWidth=3.5;
+  for(const [cx,cy,t] of bts){ctx.strokeText(t,cx,cy+13);ctx.fillText(t,cx,cy+13);}
+  /* 나 */
+  if(here&&GUNMAP[here]){const [x,y]=px(GUNMAP[here][2],GUNMAP[here][3]);
+    ctx.globalAlpha=.25;ctx.fillStyle=blood;ctx.beginPath();ctx.arc(x,y,12,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    ctx.beginPath();ctx.arc(x,y,5.5,0,Math.PI*2);ctx.fill();ctx.lineWidth=2.2;ctx.strokeStyle=paper;ctx.stroke();}
   if(legend){const cnt={};facs.forEach(f=>cnt[f]=(cnt[f]||0)+1);
-    legend.dataset.extra=1;legend.innerHTML=(nWar?`<span><i style="background:var(--blood)"></i>전란 ${nWar}군</span>`:'')+(nFam?`<span><i style="background:transparent;border:2px solid var(--brass);border-radius:50%"></i>흉년 ${nFam}군</span>`:'')+Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(([f,n])=>`<span><i style="background:var(--m-${famOf(f)})"></i>${esc(f)} ${n}군</span>`).join('')+(here?`<span><i style="background:var(--blood);border-radius:50%"></i>당신 (${esc(here)})</span>`:'');}
+    legend.innerHTML=(nWar?`<span><i style="background:var(--blood);border-radius:50%"></i>전란 ${nWar}군</span>`:'')+(nFam?`<span><i style="background:transparent;border:2px solid var(--brass);border-radius:50%"></i>흉년 ${nFam}군</span>`:'')
+      +Object.entries(cnt).sort((a,b)=>b[1]-a[1]).map(([f,n])=>`<span><i style="background:var(--m-${famOf(f)})"></i>${esc(f)} ${n}군</span>`).join('')
+      +(here?`<span><i style="background:var(--blood);border-radius:50%"></i>당신 (${esc(here)})</span>`:'');}
 }
 let mapKey='',atlasT=0;
 function drawGameMap(force){
@@ -2099,7 +2172,7 @@ function drawLog(e){
 function schedule(){
   clearTimeout(tickT);
   if(!P||!P.alive||curEv||paused)return;
-  const base=(P.age<14?1140:3900)/4;tickT=setTimeout(tick,base/speed);
+  const base=(P.age<14?2000:8000)/4;tickT=setTimeout(tick,base/speed);
 }
 function tick(){
   if(!P||!P.alive||curEv)return;
