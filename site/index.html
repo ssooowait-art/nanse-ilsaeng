@@ -152,6 +152,12 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
 .focus b{font-weight:400;color:var(--ink-soft);margin-right:2px}
 .focus button{border:1px solid var(--line);background:transparent;padding:2px 8px;border-radius:2px;font:inherit;color:var(--ink)}
 .focus button.on{background:var(--bronze);border-color:var(--bronze);color:var(--paper)}
+.namebox{display:flex;gap:8px;align-items:center}
+.nsur{font-family:var(--f-disp);font-size:24px;flex:none}
+#nameIn{flex:1;min-width:0;font-family:var(--f-disp);font-size:22px;padding:6px 10px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:2px}
+#nameIn:focus{outline:2px solid var(--bronze);outline-offset:1px}
+.nameok{font-size:15px;padding:9px 14px;flex:none}
+.namehint{font-family:var(--f-ui);font-size:12px;color:var(--ink-soft)}
 .say{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-left:3px solid var(--bronze);background:var(--paper);padding:8px 10px}
 .say-seal{flex:none;width:34px;height:34px;border:1.5px solid var(--bronze);color:var(--bronze);display:grid;place-items:center;font-family:var(--f-disp);font-size:17px;border-radius:50%}
 .say-body{min-width:0}
@@ -803,15 +809,15 @@ function radar(s,full){
   return `<svg class="radar" viewBox="${full?'-118 -70 236 130':'-96 -70 192 130'}" role="img" aria-label="능력치 ${SK.map(k=>STK[k]+' '+s[k]).join(', ')}">${g}</svg>`;
 }
 function registerHTML(){
-  const head=`戶籍 호적 · ${era()}(${P.year}) · ${P.region} ${P.county}`;
-  const note='<div class="rn">손오 시대 행정 죽간 주마루 오간(走馬樓吳簡)의 호적 양식을 본떴습니다.</div>';
+  const head=`호적 · ${era()}(${P.year}) · ${P.region} ${P.county}`;
+  const note='<div class="rn">1996년 창사에서 나온 손오 시대 죽간, 주마루 오간의 호적 양식을 본떴습니다.</div>';
   if(P.status==='유민'){P.fam={fa:{n:'이름 모를 아버지',b:P.year-rint(20,40),alive:1},mo:{n:'어머니',b:P.year-rint(17,35),alive:1}};giveJob(P.fam.fa,P.fam.mo);return `<div class="reg"><div class="rh">${head}</div><div class="rr"><span class="r1">기록</span><span>없음. 떠도는 유민의 자식으로 길 위에서 태어났다.</span><span></span></div>${note}</div>`;}
   const vil=pick(['평안','상','동','남양','소무','길양','신성','광성','의화','부평'])+'리';
   const fa=P.surname+given(P.surname),fAge=rint(19,45),mo=pick(SURN),mAge=Math.max(16,fAge-rint(0,8));P.fam={fa:{n:fa,b:P.year-fAge,alive:1},mo:{n:mo+'씨',b:P.year-mAge,alive:1}};giveJob(P.fam.fa,P.fam.mo);
   const jue={'명문 사족':'관내후','지방 호족':'오대부','아전':'공승','한실 종친':'종실'}[P.status]||pick(['공승','공사','상조','사오']);
-  const sick=R()<.25?' · '+pick(['발이 부음(腫足)','한쪽 눈이 멂(盲目)','손에 형벌 흔적(刑手)']):'';
+  const sick=R()<.25?' · '+pick(['발이 부음','한쪽 눈이 멂','손에 형벌 받은 흔적']):'';
   const row=(a,b,c,me)=>`<div class="rr${me?' me':''}"><span class="r1">${a}</span><span>${b}</span><span>${c}</span></div>`;
-  return `<div class="reg"><div class="rh">${head} ${vil}</div>${row('호주 戶人',`${jue} ${fa} · ${P.fam.fa.job[0]}${sick}`,`나이 ${fAge}`)}${row('처 妻',`대녀(大女) ${mo}씨`,`나이 ${mAge}`)}${row('자 子',`${P.name} ← 당신`,'나이 1',1)}${row('재산 訾',`${(Math.max(1,P.wealth)*1000).toLocaleString()}전`,'')}${note}</div>`;
+  return `<div class="reg"><div class="rh">${head} ${vil}</div>${row('아버지',`${fa} · ${P.fam.fa.job[0]}${sick}`,`나이 ${fAge}`)}${row('어머니',`${mo}씨`,`나이 ${mAge}`)}${row('나',`${P.name} ← 당신`,'나이 1',1)}${row('재산',`${(Math.max(1,P.wealth)*1000).toLocaleString()}전`,'')}${note}</div>`;
 }
 const STN={통:'統',무:'武',지:'智',정:'政',매:'魅'};
 const SK=['통','무','지','정','매'];
@@ -4003,7 +4009,7 @@ function timerLoop(now){
   evRAF=requestAnimationFrame(timerLoop);
 }
 function resolve(i){
-  if(!curEv||VS)return;
+  if(!curEv||VS||curEv.id==='_name')return;
   const e=curEv;curEv=null;cancelAnimationFrame(evRAF);
   let txt,choice,late=false;
   if(i<0){txt=e.to();choice='머뭇거렸다';late=true;}
@@ -4128,7 +4134,30 @@ function drawBest(){
 }
 function start(){
   $('#log').innerHTML='';curEv=null;$('#sheet').hidden=true;paused=false;$('#pauseBtn').textContent='멈춤';
-  newLife();show('game');render();schedule();
+  newLife();show('game');render();
+  if(P.legend)schedule();else showNaming();
+}
+/* 이름 짓기: 이름 없는 백성으로 태어났을 때만. 시간은 멈춰 있다 */
+function showNaming(){
+  const sur=P.surname,cur=P.name.slice(sur.length);curEv={id:'_name',title:'이름'};
+  $('#evSeal').innerHTML='名<small>명</small>';$('#evTitle').textContent='이름 짓기';$('#evSecs').textContent='';$('#evBar').style.transform='scaleX(0)';
+  $('#say').hidden=true;$('#vs').hidden=true;
+  $('#evText').innerHTML=`${esc(P.region)} ${esc(P.gun)}의 ${esc(P.status)} 집안에 아이가 태어났다. 성은 <b>${esc(sur)}</b>. 이름을 지어 주세요.`;
+  const sug=[cur];for(let i=0;i<20&&sug.length<3;i++){const g=given(sur);if(!sug.includes(g))sug.push(g);}
+  const box=$('#evChoices');
+  box.innerHTML=`<div class="namebox"><span class="nsur">${esc(sur)}</span><input id="nameIn" type="text" maxlength="3" value="${esc(cur)}" autocomplete="off" aria-label="이름"><button type="button" class="btn nameok" id="nameOk">이 이름으로</button></div><div class="namehint" id="nameHint">한글 1~3자. 아래 추천 이름을 눌러도 됩니다.</div>`
+    +sug.map((g,i)=>`<button type="button" class="choice" data-g="${esc(g)}"><span class="key">${i+1}</span><span class="txt">${esc(sur+g)}</span><span class="tag">${i?'추천':'지금 이름'}</span></button>`).join('');
+  $('#sheet').hidden=false;
+  box.querySelectorAll('[data-g]').forEach(b=>b.addEventListener('click',()=>{$('#nameIn').value=b.dataset.g;applyName();}));
+  $('#nameOk').addEventListener('click',applyName);
+  $('#nameIn').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')applyName();});
+}
+function applyName(){
+  const v=($('#nameIn').value||'').trim();
+  if(!/^[가-힣]{1,3}$/.test(v)){$('#nameHint').textContent='이름은 한글 1~3자로 지어 주세요.';return;}
+  const old=P.name,nw=P.surname+v;
+  if(nw!==old){P.name=nw;for(const e of P.log){if(e.html)e.html=e.html.split(old).join(nw);if(e.t)e.t=e.t.split(old).join(nw);}$('#log').innerHTML='';P.log.forEach(drawLog);}
+  curEv=null;$('#sheet').hidden=true;render();schedule();
 }
 
 /* ===================== 입력 ===================== */
