@@ -252,8 +252,8 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
     <div class="hero">
       <div class="vtitle" aria-hidden="true">亂世一生</div>
       <div class="hero-text">
-        <h1>난세일생<br>오천만 중 한 사람</h1>
-        <p class="sub">후한 말, 천하의 호적에 오른 백성은 오천육백만. 당신은 그 가운데 누구로 태어날지 고를 수 없습니다. 하늘이 정한 자리에서 난세를 끝까지 살아내십시오.</p>
+        <h1>난세일생</h1>
+        <p class="sub">후한 말, 누구로 태어날지는 고를 수 없습니다. 하늘이 정한 자리에서 난세를 끝까지 살아내십시오.</p>
         <ul class="rules">
           <li><b>年<small>연</small></b><span>해마다 시간이 흐릅니다. 황건의 난, 관도, 적벽이 다가옵니다.</span></li>
           <li><b>決<small>결</small></b><span>일이 닥치면 제한 시간 안에 고르세요. 머뭇거리면 운명이 대신 고릅니다.</span></li>
@@ -3741,7 +3741,7 @@ function newLife(){
   if(R()<.004){const L=pick(LEG);Object.assign(P,{legend:L.n,name:L.n,surname:L.s,zi:L.zi,born:L.b,year:L.b,region:L.r,gun:L.g,county:L.g,status:L.st,s:Object.assign({},L.S),traits:L.t.slice(),wealth:STATUS.find(x=>x.id===L.st).w,birthP:1/5.6e7,gifted:null});}
   addLog('','register',{html:registerHTML()});
   P.npcs=[mkNpc('동무',P.born+rint(-2,2)),mkNpc('라이벌',P.born+rint(-1,1))];
-  if(P.legend){const z=jo(P.zi,'이/가');addLog(`${P.region} ${P.gun}의 ${P.status} 집안에서 ${jo(P.name,'이/가')} 태어났다. 훗날 ${z.endsWith('가')?P.zi:z}라 불릴 아이다. 오천육백만 명 중 단 한 사람.`,'birth');return;}
+  if(P.legend){const z=jo(P.zi,'이/가');addLog(`${P.region} ${P.gun}의 ${P.status} 집안에서 ${jo(P.name,'이/가')} 태어났다. 훗날 ${z.endsWith('가')?P.zi:z}라 불릴 아이다.`,'birth');return;}
   addLog(`${rg.id}(${rg.han})의 ${st.id} 집안에서 ${jo(P.name,'이/가')} 태어났다.${gifted?` 타고난 ${STK[gifted]}(${STN[gifted]})의 재능이 있다.`:''}${P.traits.length?` 특기: ${P.traits.join(', ')}.`:''}`,'birth');
 }
 
@@ -3964,7 +3964,7 @@ function grade(odds){
   if(odds<2e4)return['稀','드문 삶','고을에 한둘쯤 있을 법한 한평생'];
   if(odds<2e6)return['奇','기이한 삶','군(郡) 하나에 한 명 나올까 말까'];
   if(odds<5.6e7)return['傳','전(傳)에 남을 삶','천하를 통틀어 손꼽힐 한평생'];
-  return['列','열전(列傳)의 삶','오천만 명 가운데서도 다시 나오기 어려운 한평생'];
+  return['列','열전(列傳)의 삶','사서(史書)에 이름을 남길 한평생'];
 }
 function finish(){
   if(!P||P.alive)return;

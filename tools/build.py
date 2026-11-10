@@ -11,7 +11,7 @@ head=head.replace('<meta name="claude:viewport-fit-sides" content="cover">\n',''
 body=re.sub(r"window\.__nanse=\{.*?\};\n","",body)
 body=body.replace("const SHARE_URL='';",f"const SHARE_URL='{BASE+'/' if BASE else ''}';")
 img=(BASE+'/og.png') if BASE else 'og.png'
-desc='후한 말 오천만 백성 중 한 사람으로 랜덤하게 태어나, 실시간 선택으로 난세를 살아내는 삼국지 인생 시뮬레이션.'
+desc='후한 말 이름 없는 백성으로 랜덤하게 태어나, 실시간 선택으로 난세를 살아내는 삼국지 인생 시뮬레이션.'
 meta=f'''<!doctype html>
 <html lang="ko">
 <head>
@@ -20,7 +20,7 @@ meta=f'''<!doctype html>
 <meta name="description" content="{desc}">
 <meta name="theme-color" content="#E3E7DE">
 <meta property="og:type" content="website">
-<meta property="og:title" content="난세일생 · 오천만 중 한 사람">
+<meta property="og:title" content="난세일생">
 <meta property="og:description" content="{desc}">
 <meta property="og:image" content="{img}">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
