@@ -1267,7 +1267,7 @@ const EV=[
 {id:'mourn',when:()=>false,time:8,title:'상례',han:'喪',hr:'상',
  text:()=>`${P.tmp.q.who} ${jo(P.tmp.q.n,'이/가')} 세상을 떠났다. 상주로서 장례를 치러야 한다.`,
  ch:[{l:'장례를 성대히 치른다',act:()=>{const c=Math.max(5,Math.round(P.wealth*.2));P.wealth=Math.max(0,P.wealth-c);P.fame+=4;P.s.매+=2;return `${money(c)}을 들여 장례를 치렀다. 효자라는 칭송이 돌았다.`}},
-     {l:'무덤 곁에서 삼 년 여묘살이를 한다',act:()=>{P.fame+=7;P.s.매+=3;hurt(8,'여묘살이');P.wealth=Math.max(0,P.wealth-3);if(P.path==='민'||P.path==='상')later('f1_mourn_filial',3,{});return '삼 년 동안 무덤 곁 움막에서 지냈다. 고을에 효행이 알려졌다.'}},
+     {l:'무덤 곁에서 삼 년 여묘살이를 한다',act:()=>{spend(3,'여묘살이','상복을 벗고 집으로 돌아왔다. 고을에 효행이 알려져 있었다.');P.fame+=7;P.s.매+=3;hurt(8,'여묘살이');P.wealth=Math.max(0,P.wealth-3);if(P.path==='민'||P.path==='상')later('f1_mourn_filial',3,{});return '베옷을 입고 무덤 곁 움막으로 들어갔다.'}},
      {l:'형편대로 간소하게 치른다',act:()=>{P.wealth+=1;return '조촐하게 보내 드렸다. 남은 돈으로 식구들 겨울 양식을 샀다.'}}],
  to:()=>'경황이 없어 이웃들이 대신 장례를 치렀다.'},
 {id:'kid_wed',when:()=>false,time:7,title:'딸의 혼례',han:'嫁',hr:'가',
@@ -1621,7 +1621,7 @@ const EV=[
  to:()=>'초하루 모임은 이미 파했다.'},
 {id:'a_lumu',w:3,once:1,when:()=>P.year>=150&&P.year<=183&&P.age>=15&&P.age<=28&&P.fam&&['fa','mo'].some(k=>P.fam[k]&&P.fam[k].alive),time:8,title:'여묘살이',han:'孝',hr:'효',
  text:()=>{const k=pick(['fa','mo'].filter(k=>P.fam[k]&&P.fam[k].alive));P.fam[k].alive=0;P.fam[k].d=P.year;return `${k==='fa'?'아버지':'어머니'}가 세상을 떠났다. 효렴이 벼슬길인 세상이라 무덤 곁 움막에서 삼 년을 사는 이도 많다.`},
- ch:[{l:'삼 년 여묘를 산다',act:()=>{P.wealth=Math.max(0,P.wealth-8);P.fame+=7;P.s.매+=3;hurt(8,'여묘살이');later('f2_lumu_xl',rint(2,4),{});return '거친 베옷을 입고 죽만 먹었다. 고을에 효자 소문이 났다.'}},
+ ch:[{l:'삼 년 여묘를 산다',act:()=>{spend(3,'여묘살이','삼 년 만에 움막을 나섰다. 고을에 효자 소문이 나 있었다.');P.wealth=Math.max(0,P.wealth-8);P.fame+=7;P.s.매+=3;hurt(8,'여묘살이');later('f2_lumu_xl',rint(2,4),{});return '거친 베옷을 입고 죽만 먹으며 무덤을 지키기로 했다.'}},
      {l:'예법대로만 장례를 치른다',act:()=>{P.wealth=Math.max(0,P.wealth-3);P.wealth+=2;return '조용히 곡을 하고 집안일로 돌아갔다. 그해 농사는 거르지 않았다.'}},
      {l:'이십 년 여묘를 내세운다',st:'지',d:55,act:ok=>{if(ok){P.fame+=12;return '효자 정문(旌門)이 섰다.'}P.fame=Math.max(0,P.fame-8);P.s.매-=4;return '움막에서 아이까지 낳은 것이 들통났다. 진번이 조선(趙宣)을 벌한 이야기가 다시 돌았다.'}}],
  to:()=>'장례를 마치고 나니 한 해가 갔다.'},
@@ -2127,7 +2127,7 @@ const EV=[
  to:()=>{hurt(15,'부역');return '대답도 하기 전에 끌려갔다.'}},
 {id:'d_mourning',w:3,once:1,when:()=>P.year>=160&&P.year<=260&&P.age>=20&&P.age<=50&&!P.flags.orphan&&P.fam&&P.fam.fa&&P.fam.fa.alive,time:7,title:'상복',han:'喪',hr:'상',
  text:()=>{const f=P.fam.fa;f.alive=0;f.d=P.year;P.tmp.fa=f.n;const who=/아버지/.test(f.n)?'아버지가':`아버지 ${jo(f.n,'이/가')}`;return `${who} 세상을 떠났다. 예법대로라면 삼 년 동안 상복을 입고 무덤 곁 움막에서 지내야 한다.`},
- ch:[{l:'무덤 곁 움막에서 삼 년을 지낸다',p:.7,act:ok=>{P.wealth=Math.max(0,P.wealth-8);P.s.매+=4;if(ok){P.fame+=8;return '효자라는 소문이 군 전체에 퍼졌다.'}P.fame+=5;hurt(20,'상중의 병');return '죽만 먹으며 곡하다 뼈만 남았다. 사람들은 그것도 효라 했다.'}},
+ ch:[{l:'무덤 곁 움막에서 삼 년을 지낸다',p:.7,act:ok=>{P.wealth=Math.max(0,P.wealth-8);P.s.매+=4;if(ok){P.fame+=8;spend(3,'여묘살이','삼 년 상을 마쳤다. 효자라는 소문이 군 전체에 퍼져 있었다.');return '상복을 입고 무덤 곁 움막으로 들어갔다.'}P.fame+=5;hurt(20,'상중의 병');spend(3,'여묘살이','삼 년 상을 마쳤다. 죽만 먹으며 곡하다 뼈만 남았지만 사람들은 그것도 효라 했다.');return '상복을 입고 움막으로 들어갔다. 몸이 버틸지 걱정이다.'}},
      {l:'후하게 장례를 치른다',req:()=>P.wealth>=20,rq:'2만 전 필요',act:()=>{P.wealth-=15;P.fame+=3;later('f3_grave_robbed',rint(2,5),{n:P.tmp.fa||'아버지'});return '옥 장식과 칠기를 넣어 묻었다. 장례 행렬을 지켜보는 낯선 눈이 몇 있었다.'}},
      {l:'간소히 묻고 일터로 돌아간다',act:()=>{P.wealth+=3;P.s.매-=2;return '살아 있는 식구가 먼저였다. 친척들이 수군거렸다.'}}],
  to:()=>{P.fame=Math.max(0,P.fame-2);return '장례를 미루는 사이 친척들 입방아에 올랐다.'}},
@@ -3742,6 +3742,8 @@ function epilogue(){
 
 /* ===================== 방침과 후속 사건 ===================== */
 /* 후속 사건: 선택의 결과로 몇 년 뒤 다른 사건을 예약한다 */
+/* 몇 해 동안 다른 일을 하지 않고 보내는 시간 (여묘살이 등). 그동안 시간은 빨리 흐르고 큰 역사 사건만 끼어든다 */
+function spend(years,label,end){P.away={until:P.year+years,label,start:P.year,end:end||''};}
 function later(id,years,data){(P.later=P.later||[]).push(Object.assign({},data||{},{id,due:P.year+Math.max(1,Math.round(years)||1)}));}
 function dueLater(){if(!P.later||!P.later.length)return;const due=P.later.filter(l=>l.due<=P.year);if(!due.length)return;P.later=P.later.filter(l=>l.due>P.year);P.queue=P.queue||[];for(const l of due)P.queue.push(l);}
 /* 아버지의 직업: [이름, 하는 일, 하는 일, 능력 보너스, 특기] */
@@ -3800,6 +3802,7 @@ function applySeason(){
 }
 function renderFocus(){
   const el=$('#focus');if(!el)return;if(!P||P.age<15||!P.alive){el.hidden=true;return;}el.hidden=false;
+  if(P.away){el.innerHTML=`<b>방침</b><span class="chip lord">${esc(P.away.label)} 중 · ${Math.max(1,P.away.until-P.year)}년 남음</span>`;return;}
   P.focus=P.focus||'work';
   el.innerHTML='<b>방침</b>'+FOCUS_K.map(k=>`<button type="button" class="${P.focus===k?'on':''}" data-f="${k}" title="${esc(FOCUS_D[k])}">${esc(focusLabel(k))}</button>`).join('');
 }
@@ -3852,7 +3855,7 @@ function drawLog(e){
 function schedule(){
   clearTimeout(tickT);
   if(!P||!P.alive||curEv||paused)return;
-  const base=(P.age<14?2000:8000)/4;tickT=setTimeout(tick,base/speed);
+  const base=(P.away?1400:P.age<14?2000:8000)/4;tickT=setTimeout(tick,base/speed);
 }
 function tick(){
   if(!P||!P.alive||curEv)return;
@@ -3860,6 +3863,7 @@ function tick(){
   if(P.season===0){
     P.year++;P.age++;
     if(eraName(P.year)!==eraName(P.year-1))addLog(`시대가 바뀌었다. ${eraName(P.year)}의 시대.`,'world');
+    if(P.away&&P.year>=P.away.until){const yn=P.year-P.away.start;addLog(`${['','한 해','두 해','삼 년','네 해','다섯 해'][yn]||yn+'년'} ${jo(P.away.label,'을/를')} 마쳤다. ${P.away.end}`.trim(),'key');P.away=null;}
     dueLater();
     worldYear();
     yearly();
@@ -3869,9 +3873,13 @@ function tick(){
   if(P.alive&&P.season===2&&P.flags.debt){P.wealth=Math.max(0,P.wealth-P.flags.debt);addLog(`가을걷이 뒤 봄에 빌린 장리쌀 ${money(P.flags.debt)}어치를 갚았다.`,'flow');P.flags.debt=0;}
   if(P.alive){
     let ev=null;
-    if(P.queue&&P.queue.length&&P.age>=12){const q=P.queue.shift();P.tmp.q=q;if(!(q.id==='marry'&&P.married))ev=EV.find(x=>x.id===q.id)||null;}
-    if(P.alive)applySeason();
-    if(!ev&&(P.age>=16?R()<.55:P.season===P.evSeason))ev=pickEvent();
+    const away=!!P.away;
+    if(!away&&P.queue&&P.queue.length&&P.age>=12){const q=P.queue.shift();P.tmp.q=q;if(!(q.id==='marry'&&P.married))ev=EV.find(x=>x.id===q.id)||null;}
+    if(P.alive&&!away)applySeason();
+    if(away&&P.season===2&&P.path==='민')P.wealth=Math.max(0,P.wealth-1);
+    if(away){if(!ev){const has=id=>P.done.includes(id);ev=EV.find(e=>e.prio&&!has(e.id)&&e.when())||null;
+      if(ev){addLog(`난리가 닥쳐 ${jo(P.away.label,'을/를')} 다 마치지 못하고 움막을 나섰다.`,'key');P.away=null;}}}
+    else if(!ev&&(P.age>=16?R()<.55:P.season===P.evSeason))ev=pickEvent();
     if(ev){render();return showEvent(ev);}
     if(R()<(P.age<14?.12:.18)){const fl=seasonFlow();if(!P.log.slice(-30).some(e=>e.k==='flow'&&e.t===fl))addLog(fl,'flow');}
   }
@@ -3897,12 +3905,12 @@ function yearly(){
     const p=(P.age-45)*.011+(P.hp<30?.08:0)-(P.wealth>60?.01:0);
     if(R()<p*((P.traits||[]).includes('무병장수')?.6:1)||P.age>=100)return die2(P.age>=58?'천수':'병');
   }
-  if(['군','관'].includes(P.path)&&P.age>=15){const g=P.fame-(P.fameMark==null?P.fame:P.fameMark);
+  if(!P.away&&['군','관'].includes(P.path)&&P.age>=15){const g=P.fame-(P.fameMark==null?P.fame:P.fameMark);
     if(g>=6){const gift=Math.min(15,Math.round(g/2));P.wealth=Math.max(0,P.wealth+gift);addLog(`논공행상. 올해 공적 ${g}. 질(秩) ${SAL[P.path][P.rank]}, 하사품으로 ${money(gift)}을 받았다.`,'key');}}
   P.fameMark=P.fame;
   if(P.lordFig&&['군','관'].includes(P.path)){const f=FIG.find(x=>x.id===P.lordFig);const at=f&&f.at.find(([a,b])=>P.year>=a&&P.year<=b);
     if(at&&at[2]!==P.region){moveTo(at[2]);addLog(`주군 ${jo(P.lordFig,'을/를')} 따라 ${jo(P.region,'로')} 옮겼다.`,'flow');}}
-  promote(true);
+  if(!P.away)promote(true);else trackBest();
 }
 /* 출세의 희귀도: 그 자리에 오른 사람이 백성 몇 명 중 한 명꼴인가 (현 약 1,180곳, 군국 약 100곳 기준의 어림값) */
 const ACH={군:[1/5,1/30,1/80,1/400,1/2000,1/1e4,1/5e4,1/2e5,1/1e6,1/2e7],
