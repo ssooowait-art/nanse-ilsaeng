@@ -3855,7 +3855,7 @@ function drawLog(e){
 function schedule(){
   clearTimeout(tickT);
   if(!P||!P.alive||curEv||paused)return;
-  const base=(P.away?1400:P.age<14?2000:8000)/4;tickT=setTimeout(tick,base/speed);
+  const base=(P.away?4000:P.age<14?3500:14000)/4;tickT=setTimeout(tick,base/speed);
 }
 function tick(){
   if(!P||!P.alive||curEv)return;
@@ -4153,7 +4153,7 @@ function applyName(){
 $('#oddsTable').innerHTML=STATUS.slice().sort((a,b)=>b.p-a.p).map(s=>`<tr class="${s.p<.01?'rare':''}"><td>${gl(s.id)}</td><td>${(s.p*100).toString().replace(/(\.\d{2})\d+/,'$1')}%</td></tr>`).join('');
 $('#startBtn').addEventListener('click',start);
 $('#againBtn').addEventListener('click',start);
-$('#speedBtn').addEventListener('click',()=>{speed=speed===1?2:speed===2?4:1;$('#speedBtn').textContent='×'+speed;schedule();});
+$('#speedBtn').addEventListener('click',()=>{speed=speed===.5?1:speed===1?2:speed===2?4:.5;$('#speedBtn').textContent=speed===.5?'×½':'×'+speed;schedule();});
 $('#pauseBtn').addEventListener('click',()=>{paused=!paused;$('#pauseBtn').textContent=paused?'진행':'멈춤';schedule();});
 const SHARE_URL='';
 /* 다른 플레이어의 흔적: 실제 배포 주소에서만 서버와 주고받는다 */
@@ -4212,7 +4212,7 @@ window.claude?.hot?.snapshot?.(()=>({P:P&&P.alive?Object.assign({},P,{tmp:{}}):n
 function boot(d){
   drawBest();initAtlas();loadWall();
   if(d&&d.P&&d.P.alive){
-    P=d.P;if(P.season==null)P.season=0;if(!P.kids)P.kids=(P.children||[]).map(n=>({n,sex:'m',b:P.year-10,alive:1,path:null,rank:0,fate:''}));if(P.traits)P.traits=P.traits.map(t=>t==='장수'?'무병장수':t);if(P.pseed==null)P.pseed=rint(0,9999);if(!P.gun){const g=gunsOf(P.region);if(g.length)P.gun=pick(g)[0];}if(P.s.덕!=null){P.s.매=P.s.덕;delete P.s.덕;}SK.forEach(k=>{if(P.s[k]==null)P.s[k]=50;});P.traits=P.traits||[];P.bonds=P.bonds||{};P.seen=P.seen||[];P.county=P.county||'';speed=d.speed||1;$('#speedBtn').textContent='×'+speed;
+    P=d.P;if(P.season==null)P.season=0;if(!P.kids)P.kids=(P.children||[]).map(n=>({n,sex:'m',b:P.year-10,alive:1,path:null,rank:0,fate:''}));if(P.traits)P.traits=P.traits.map(t=>t==='장수'?'무병장수':t);if(P.pseed==null)P.pseed=rint(0,9999);if(!P.gun){const g=gunsOf(P.region);if(g.length)P.gun=pick(g)[0];}if(P.s.덕!=null){P.s.매=P.s.덕;delete P.s.덕;}SK.forEach(k=>{if(P.s[k]==null)P.s[k]=50;});P.traits=P.traits||[];P.bonds=P.bonds||{};P.seen=P.seen||[];P.county=P.county||'';speed=d.speed||1;$('#speedBtn').textContent=speed===.5?'×½':'×'+speed;
     $('#log').innerHTML='';P.log.forEach(drawLog);show('game');render();schedule();
   } else show('title');
 }
