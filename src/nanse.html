@@ -963,6 +963,8 @@ function pop(){
 const inR=(...r)=>r.includes(P.region);
 function title(){
   if(P.path==='민'&&P.flags&&P.flags.nobi) return '노비';
+  if(P.path==='민'&&P.flags&&P.flags.wulord) return '오주(塢主)';
+  if(P.path==='민'&&P.flags&&P.flags.wu) return '호족';
   if(P.path==='민') return P.wealth<5?'유민':P.wealth<15?'빈농':P.wealth<50?'농민':P.wealth>=500?'대지주':P.fame>25?'향촌 유지':'부농';
   if(P.path==='상') return P.wealth<40?'행상':P.wealth<150?'상인':P.wealth<1000?'거상':P.wealth<10000?'대상(大商)':'천하의 거부';
   return RANKS[P.path][P.rank];
@@ -3767,6 +3769,32 @@ const EV=[
      {l:'금지된 쇠붙이를 몰래 판다',p:.6,act:ok=>{if(ok){P.wealth+=25;return '값을 세 배로 받았다. 그 쇠가 무엇이 될지는 생각하지 않기로 했다.'}P.wealth=Math.round(P.wealth*.5);P.fame=Math.max(0,P.fame-5);hurt(15,'곤장');return '관문 관리에게 걸렸다. 물건을 몰수당하고 곤장을 맞았다.'}},
      {l:'구경만 하고 그들 말을 배운다',act:()=>{P.s.지+=1;P.s.매+=1;return '말 몇 마디와 셈법을 배웠다.'}}],
  to:()=>'장이 파했다.'},
+{id:'m_haozu',once:1,w:6,when:()=>P.path==='민'&&!P.flags.nobi&&P.year>=184&&P.age>=25&&P.age<=60&&(P.wealth>=300||(P.post&&P.post.land>=150))&&P.fame>=20,time:8,title:'호족',han:'塢',hr:'오',
+ text:()=>`땅이 넓어지고 이름이 나니 종족과 소작인 수백 가가 당신을 우러른다. 난리 통에 마을을 지킬 사병을 모으자는 말이 나온다.`,
+ ch:[{l:'사병을 모으고 오(塢)를 쌓는다',act:()=>{P.wealth=Math.round(P.wealth*.7);P.flags.wu=1;P.fame+=8;P.s.통+=3;later('m_haozu_lord',rint(2,4),{});return '흙담을 높이 두르고 망루를 세웠다. 장정 수백이 창을 들었다. 사람들은 당신을 호족이라 부른다.'}},
+     {l:'이웃 고을 호족과 혼인으로 손잡는다',st:'매',d:55,act:ok=>{if(ok){P.flags.wu=1;P.fame+=6;later('m_haozu_lord',rint(3,5),{});return '두 집안이 사돈을 맺었다. 고을 셋이 한목소리를 낸다.'}P.fame+=1;return '저쪽 집안이 콧방귀를 뀌었다.'}},
+     {l:'나서지 않고 농사만 짓는다',act:()=>{P.wealth+=5;return '조용히 곡식 섬만 늘렸다.'}}],
+ to:()=>'말만 무성하다 흐지부지되었다.'},
+{id:'m_haozu_lord',when:()=>false,time:8,title:'군웅의 사자',han:'使',hr:'사',
+ text:()=>{const f=ruler();return f==='한'?'토벌군의 장수가 사람을 보냈다. 사병을 이끌고 관군에 들면 벼슬을 주겠다고 한다.':`${f}의 사자가 왔다. 종족과 사병을 이끌고 귀부하면 벼슬을 내리겠다고 한다.`;},
+ say:()=>[ruler()==='한'?'관군의 사자':`${ruler()}의 사자`,'이 난세에 오 하나로 얼마나 버티겠소. 큰 나무 그늘에 드시오.'],
+ ch:[{l:'종족을 이끌고 귀부한다',act:()=>{const tr=P.flags.wu?600:300;setPath('군');P.rank=4;P.fame+=15;if(P.post){P.post.troops=tr;}hon('종족을 이끌고 귀부한 호족',1/5e4);return '사병 수백을 이끌고 군문에 들었다. 군사마의 인수를 받았다. 이전과 허저도 이렇게 조조에게 갔다.'}},
+     {l:'오를 지키며 누구에게도 머리를 숙이지 않는다',st:'통',d:65,act:ok=>{if(ok){P.flags.wulord=1;P.fame+=12;hon('난세의 오주',1/2e5);return '사자를 돌려보냈다. 피난민들이 앞다퉈 당신의 오로 몰려들었다. 이 고을에서는 당신이 곧 법이다.'}P.wealth=Math.round(P.wealth*.5);hurt(25,'오의 함락');P.flags.wu=0;return '괘씸히 여긴 군사가 들이쳤다. 흙담이 무너지고 곳간이 털렸다.'}},
+     {l:'곡식만 바치고 거리를 둔다',act:()=>{P.wealth=Math.round(P.wealth*.8);P.fame+=4;return '군량 수천 섬을 보냈다. 사자는 만족해 돌아갔다.'}}],
+ to:()=>{P.wealth=Math.round(P.wealth*.7);return '대답을 미루는 사이 군사가 와서 곡식을 거두어 갔다.'}},
+{id:'c_patron',once:1,w:6,when:()=>P.path==='상'&&P.wealth>=1000&&P.year>=188&&P.age>=22&&P.age<=60&&ruler()!=='한',time:8,title:'군자금',han:'資',hr:'자',
+ text:()=>`${ruler()}의 군량이 바닥났다는 소문이다. 사자가 당신 집 문을 두드린다. 군자금을 대 주면 크게 갚겠다고 한다.`,
+ say:()=>[`${ruler()}의 사자`,'주공께서 그대를 기억하실 것이오.'],
+ ch:[{l:'재산의 절반과 노복을 바친다',act:()=>{P.wealth=Math.round(P.wealth*.5);setPath('관');P.rank=4;P.fame+=20;if(FIG.find(x=>x.id===ruler()))P.lordFig=ruler();hon('군웅의 금고',1/1e5);return '수레 수백 대에 돈과 비단을 실어 보냈다. 주군이 손을 잡으며 벼슬을 내렸다. 미축이 유비에게 그랬듯이.'}},
+     {l:'얼마간만 내고 장사는 지킨다',act:()=>{P.wealth=Math.round(P.wealth*.85);P.fame+=6;if(P.post&&P.post.credit!=null)P.post.credit=c100(P.post.credit+8);return '체면이 설 만큼만 냈다. 관문 통행이 한결 수월해졌다.'}},
+     {l:'핑계를 대고 거절한다',act:()=>{later('c_patron_x',rint(1,3),{f:ruler()});return '사자는 아무 말 없이 돌아갔다.'}}],
+ to:()=>{later('c_patron_x',rint(1,2),{f:ruler()});return '대답을 미뤘다.'}},
+{id:'c_patron_x',when:()=>false,time:7,title:'몰수',han:'沒',hr:'몰',
+ text:()=>`${P.tmp.q.f}의 군사가 들이닥쳤다. 군량을 감추고 내놓지 않았다는 죄목이다.`,
+ ch:[{l:'창고를 열어 다 내준다',act:()=>{P.wealth=Math.round(P.wealth*.5);return '창고가 텅 비었다. 목숨은 건졌다.'}},
+     {l:'장수에게 뇌물을 쓴다',st:'정',d:60,act:ok=>{if(ok){P.wealth=Math.round(P.wealth*.8);return '장수가 장부에 "이상 없음"이라 적었다.'}P.wealth=Math.round(P.wealth*.4);P.fame=Math.max(0,P.fame-6);return '뇌물까지 몰수당했다.'}},
+     {l:'가솔을 데리고 다른 땅으로 달아난다',act:()=>{P.wealth=Math.round(P.wealth*.3);moveRandom();return `금붙이만 품고 ${jo(P.region,'로')} 달아났다.`}}],
+ to:()=>{P.wealth=Math.round(P.wealth*.4);return '군사들이 알아서 다 실어 갔다.'}},
 ];
 
 /* ===================== 살아 있는 세계: 고을·계절·가족·사람 ===================== */
@@ -4289,6 +4317,8 @@ function achP(){
   if(P.path==='적'&&P.flags.yellow)return [1/20,1/200,1/5000,1/1.5e6][P.rank];
   if(ACH[P.path])return ACH[P.path][P.rank];
   if(P.path==='상')return P.wealth>=100000?1/2e6:P.wealth>=10000?1/1e5:P.wealth>=1000?1/5000:P.wealth>=150?1/500:P.wealth>=40?1/100:1;
+  if(P.path==='민'&&P.flags.wulord)return 1/2e5;
+  if(P.path==='민'&&P.flags.wu)return 1/2e4;
   if(P.path==='민')return P.wealth>=500?1/2000:P.wealth>=50?(P.fame>25?1/300:1/50):1;
   return 1;
 }
@@ -4301,9 +4331,10 @@ function promote(yearly){
     const nx=P.rank+1,sp=SEATP[P.path];let ok=true;
     if(sp&&sp[nx]!=null){
       if(nx===9&&lordBond()<4){ok=false;if(!P.flags.capNote){P.flags.capNote=1;addLog(`명성은 충분하지만 ${RANKS[P.path][9]}의 자리는 주군의 깊은 신임 없이는 오를 수 없다.`,'flow');}}
-      else if(R()>sp[nx]*(P.path==='관'&&P.post&&P.post.path==='관'?(.6+P.post.minsim/125)*(gunTier(P.gun)==='big'?.85:gunTier(P.gun)==='small'?1.1:1):1))ok=false;
+      else if(R()>Math.min(.9,sp[nx]*(1+2*Math.max(0,P.fame-th[nx])/th[nx])+.04*(P.waitY||0)+.03*lordBond())*(P.path==='관'&&P.post&&P.post.path==='관'?(.6+P.post.minsim/125)*(gunTier(P.gun)==='big'?.85:gunTier(P.gun)==='small'?1.1:1):1))ok=false;
     }
-    if(ok){P.rank++;trackBest();addLog(`${jo(fullTitle(),'로')} 올랐다.`,'key');}
+    if(ok){P.rank++;P.waitY=0;trackBest();addLog(`${jo(fullTitle(),'로')} 올랐다.`,'key');}
+    else if(nx!==9||lordBond()>=4){P.waitY=(P.waitY||0)+1;if(P.waitY===3)addLog(`공은 차고 넘치나 ${RANKS[P.path][nx]} 자리가 비지 않는다. 기다리는 해가 길어질수록 차례가 가까워진다.`,'flow');}
   }
   if(!P.zi&&P.fame>=20){P.zi=pick(ZI1)+pick(ZI2);const z=jo(P.zi,'이/가');addLog(`이름이 알려져 사람들이 자(字)를 ${z.endsWith('가')?P.zi:z}라 불렀다.`,'flow');}
 }
