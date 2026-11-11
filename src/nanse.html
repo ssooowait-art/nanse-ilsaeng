@@ -203,6 +203,18 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
 .dex li.got{border-style:solid;border-color:var(--bronze);color:var(--bronze)}
 
 /* decision sheet */
+.roll{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:var(--paper);padding:16px}
+.roll-in{width:min(420px,100%);text-align:center}
+.roll-h{font-family:var(--f-ui);font-size:13px;color:var(--ink-soft);margin:0 0 18px;letter-spacing:.05em}
+.roll dl{margin:0;display:grid;gap:10px}
+.roll .rr{display:grid;grid-template-columns:5em 1fr;align-items:center;border-bottom:1px solid var(--line);padding:8px 4px}
+.roll dt{font-family:var(--f-ui);font-size:12px;color:var(--ink-soft);text-align:left}
+.roll dd{margin:0;font-size:22px;text-align:right;color:var(--ink-soft);opacity:.55;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.roll dd.hit{color:var(--ink);opacity:1;animation:rollhit .35s ease-out}
+.roll dd.rare{color:var(--bronze)}
+.roll dd.hit{transform-origin:right center}
+@keyframes rollhit{0%{transform:scale(1.18)}100%{transform:scale(1)}}
+.roll-skip{font-family:var(--f-ui);font-size:11px;color:var(--ink-soft);margin-top:20px;opacity:.6}
 .sheet{background:var(--slip);border-top:2px solid var(--ink);margin-left:calc(-1 * max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1 * max(16px,env(safe-area-inset-right,0px)));
   padding:14px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
   display:flex;flex-direction:column;gap:10px;animation:up .25s ease-out}
@@ -300,6 +312,7 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
   </section>
 
   <!-- 게임 화면 -->
+  <div class="roll" id="roll" hidden><div class="roll-in"><p class="roll-h">천하 어딘가에서 한 아이가 태어난다</p><dl id="rollRows"></dl><p class="roll-skip">누르면 건너뜁니다</p></div></div>
   <section id="game" class="screen" hidden>
     <div class="bar">
       <div class="era" id="era">—</div>
@@ -435,6 +448,11 @@ const GUN=[
 ];
 const GUNMAP={};GUN.forEach(g=>GUNMAP[g[0]]=g);
 const gunsOf=r=>GUN.filter(g=>g[1]===r);
+/* 후한서 군국지, 영화 5년(140) 호구 조사의 인구(口). 태어날 고을은 이 인구에 비례해 정해진다 */
+const GUNPOP={'하남윤':1010827,'하내군':801558,'하동군':570803,'홍농군':199113,'경조윤':285574,'좌풍익':145195,'우부풍':93091,'영천군':1436513,'여남군':2100788,'양국':431283,'패국':251393,'진국':1547572,'노국':411590,'위군':695606,'조국':188381,'거록군':602096,'상산국':631184,'중산국':658195,'안평국':655118,'하간국':634421,'청하국':760418,'발해군':1106500,'진류군':869433,'동군':603393,'제음군':657554,'산양군':606091,'임성국':194156,'동평국':448270,'제북국':235897,'태산군':437317,'동해군':706416,'낭야국':570967,'팽성국':493027,'하비국':611083,'광릉군':410190,'평원군':1002658,'제남국':453308,'낙안국':424075,'제국':491765,'북해국':853604,'동래군':484393,'남양군':2439618,'남군':747604,'강하군':265464,'무릉군':250913,'장사군':1059372,'영릉군':1001578,'계양군':501403,'구강군':432426,'여강군':424683,'단양군':630545,'오군':700782,'회계군':481196,'예장군':1668906,'한중군':267402,'파군':1086049,'광한군':509438,'촉군':1350476,'건위군':411378,'월수군':623418,'장가군':267253,'익주군':110802,'영창군':1897344,'무도군':81728,'한양군':130138,'농서군':29637,'안정군':29060,'북지군':18637,'금성군':18947,'무위군':34226,'장액군':26040,'주천군':50000,'상당군':127403,'태원군':200124,'서하군':20838,'상군':28599,'안문군':249000,'정양군':13571,'운중군':26430,'오원군':22957,'삭방군':7843,'탁군':633754,'광양군':280600,'대군':126188,'상곡군':51204,'어양군':435740,'우북평군':53475,'요서군':81714,'요동군':81714,'현도군':43163};
+REGIONS.forEach(r=>r.w=gunsOf(r.id).reduce((a,g)=>a+(GUNPOP[g[0]]||1e5),0)/1e5);
+/* 후한서 본기·오행지에 '대역(大疫)'으로 적힌 해. 이 해에는 누구나 병으로 죽을 위험이 커진다 */
+const EPI={151:.01,161:.012,171:.015,173:.015,179:.015,182:.018,185:.015,208:.012,217:.03,223:.01};
 /* 주 단위 기본값과 다른 군만 예외로 적는다: [시작, 끝(미포함), 세력] */
 const GOV={
  '한중군':[[191,215,'장로'],[215,219,'조조'],[219,263,'유비']],'무도군':[[191,215,'장로']],
@@ -4030,7 +4048,7 @@ function newLife(){
   P={surname,name:surname+given(surname),zi:null,born,year:born,age:0,region:rg.id,status:st.id,s,hp:100,wealth:st.w,fame:st.id==='명문 사족'?6:0,
      path:'민',rank:0,married:0,children:[],flags:{},done:[],cool:{},log:[],alive:true,birthP,luck:1,deathCause:null,tmp:{},gifted};
   P.traits=[];if(R()<.6)P.traits.push(pick(TRAITS).id);if(R()<.15){const o=TRAITS.filter(x=>!P.traits.includes(x.id));P.traits.push(pick(o).id);}
-  P.bonds={};P.seen=[];P.lordFig=null;P.pseed=rint(0,9999);P.season=3;P.evSeason=rint(0,3);P.kids=[];P.queue=[];P.kind=[];P.gun=pick(gunsOf(rg.id))[0];P.county=P.gun;
+  P.bonds={};P.seen=[];P.lordFig=null;P.pseed=rint(0,9999);P.season=3;P.evSeason=rint(0,3);P.kids=[];P.queue=[];P.kind=[];P.gun=wpick(gunsOf(rg.id),g=>GUNPOP[g[0]]||1e5)[0];P.county=P.gun;
   if(R()<.004){const L=pick(LEG);Object.assign(P,{legend:L.n,name:L.n,surname:L.s,zi:L.zi,born:L.b,year:L.b,region:L.r,gun:L.g,county:L.g,status:L.st,s:Object.assign({},L.S),traits:L.t.slice(),wealth:STATUS.find(x=>x.id===L.st).w,birthP:1/5.6e7,gifted:null});}
   P.pot={};for(const k of SK)P.pot[k]=Math.min(92,P.s[k]+rint(12,32));
   if(P.gifted)P.pot[P.gifted]=99;
@@ -4104,7 +4122,9 @@ function yearly(){
   else P.hp=Math.min(mh,P.hp+(P.age<40?8:4));
   if(P.hp>mh)P.hp=mh;
   if(P.hp<=0)return die2(P.deathCause||'병');
-  if(P.age>=1&&P.age<=5&&R()<.003){P.flags.early=1;return die2('어린 날의 돌림병');}
+  if(EPI[P.year]&&P.age>=1){const pr=EPI[P.year]*(P.age<6?2:P.age>55?1.8:1)*((P.traits||[]).includes('의술')?.5:1)*(P.wealth>60?.6:1);
+    if(R()<pr){P.flags.early=P.age<6?1:P.flags.early;return die2(P.age<6?'어린 날의 돌림병':'역병');}}
+  if(P.age>=1&&P.age<=5&&R()<.005){P.flags.early=1;return die2('어린 날의 돌림병');}
   if(P.age===5)addLog('다섯 살을 넘겼다. 이 시대 아이 셋 중 하나는 이 나이를 넘기지 못했다.','key');
   if(P.age>=48&&R()<.6&&P.s.무>1){P.s.무--;yg('무',-1);}
   if(P.age>=55&&R()<.4&&P.s.통>1){P.s.통--;yg('통',-1);}
@@ -4339,7 +4359,26 @@ function drawBest(){
 function start(){
   $('#log').innerHTML='';curEv=null;$('#sheet').hidden=true;paused=false;$('#pauseBtn').textContent='멈춤';
   newLife();show('game');render();
-  if(P.legend)schedule();else showNaming();
+  const go=()=>{if(P.legend)schedule();else showNaming();};
+  if(VS_DELAY===0)return go();
+  rollIntro(go);
+}
+/* 출생 슬롯: 해·고을·집안·타고난 것이 차례로 멈춘다 */
+function rollIntro(done){
+  const box=$('#roll'),dl=$('#rollRows');let fin=false;const T=[];
+  const gift=P.legend?['역사에 이름을 남길 사람',1]:P.genius?['남다른 그릇',1]:P.gifted?[`타고난 ${STK[P.gifted]}`,1]:P.traits.length?[`특기 ${P.traits.join('·')}`,0]:['평범한 아이',0];
+  const rows=[['태어난 해',()=>`${rint(155,182)}년`,`${P.born}년`,0],
+    ['고을',()=>{const r=wpick(REGIONS,x=>x.w);return `${r.id} ${wpick(gunsOf(r.id),g=>GUNPOP[g[0]]||1e5)[0]}`;},`${P.region} ${P.gun}`,0],
+    ['집안',()=>wpick(STATUS,x=>x.p).id,P.status,['명문 사족','한실 종친','지방 호족'].includes(P.status)?1:0],
+    ['타고난 것',()=>pick(['평범한 아이','평범한 아이','특기 궁술','특기 언변','특기 기마','타고난 지력','특기 의술','평범한 아이']),gift[0],gift[1]]];
+  dl.innerHTML=rows.map(r=>`<div class="rr"><dt>${r[0]}</dt><dd>—</dd></div>`).join('');
+  const dds=[...dl.querySelectorAll('dd')];box.hidden=false;
+  const end=()=>{if(fin)return;fin=true;T.forEach(clearTimeout);box.hidden=true;box.onclick=null;done();};
+  box.onclick=end;
+  rows.forEach((r,i)=>{const stop=700+i*650;let t=0;
+    const spin=()=>{if(fin)return;if(t>=stop){dds[i].textContent=r[2];dds[i].className='hit'+(r[3]?' rare':'');if(i===rows.length-1)T.push(setTimeout(end,r[3]?1600:1100));return;}
+      dds[i].textContent=r[1]();const gap=t<stop-400?45:t<stop-150?90:160;t+=gap;T.push(setTimeout(spin,gap));};
+    spin();});
 }
 /* 이름 짓기: 이름 없는 백성으로 태어났을 때만. 시간은 멈춰 있다 */
 function showNaming(){
