@@ -3799,21 +3799,23 @@ const FOCUS_W={social:{meet:2.2,npc_meet:2.2,liubei:2,caocao:1.8,sunce:2,longzho
   study:{xiaolian:2.2,debate:2,hermit:2,caocao:1.6,a_taixue:2,a_zhengxuan:2,a_yuedan:1.8},arms:{bandit:1.6,duel:1.8,hero:1.6,xia:2,conscript:1.4},
   work_군:{battle:1.8,field:1.8,hero:1.3},work_관:{lawsuit:1.8,riot:1.5,graft:1.6},work_상:{trade:2.2,magnate:2},work_적:{raid:2,bandit_king:1.6},work_민:{drought:1.4,s_autumn:1.5}};
 function focusMul(id){const k=P.focus==='work'||!P.focus?'work_'+P.path:P.focus;return ((FOCUS_W[k]||{})[id])||1;}
-function gain(k,v){P.xp=P.xp||{};v*=Math.max(.15,1-P.s[k]/115);P.xp[k]=(P.xp[k]||0)+v;while(P.xp[k]>=1){P.xp[k]-=1;if(P.s[k]<99)P.s[k]++;}}
+/* 능력치가 높을수록 오르기 어렵다. 50까지는 그대로, 90을 넘으면 거의 오르지 않는다 */
+function softF(v){return v<50?1:v<65?.7:v<75?.45:v<85?.25:v<92?.12:.05;}
+function gain(k,v){P.xp=P.xp||{};v*=softF(P.s[k]);P.xp[k]=(P.xp[k]||0)+v;while(P.xp[k]>=1){P.xp[k]-=1;if(P.s[k]<99)P.s[k]++;}}
 function fg(v){P.fx=(P.fx||0)+v;while(P.fx>=1){P.fx-=1;P.fame++;}}
 function applySeason(){
   if(P.age<15)return;const f=P.focus||'work';P.fc=P.fc||{};P.fc[f]=(P.fc[f]||0)+1;
   const g=P.gun?gunState(P.gun,P.year):{};const farmer=P.path==='민';
   if(f==='work'){
     if(P.path==='민'){if(P.season===2)P.wealth+=g.harvest==='흉년'?1:g.harvest==='풍년'?6:3;gain('통',.06);}
-    else if(P.path==='군'){fg(.2);gain('통',.25);gain('무',.15);}
-    else if(P.path==='관'){fg(.22);gain('정',.3);}
+    else if(P.path==='군'){fg(.2);gain('통',.18);gain('무',.1);}
+    else if(P.path==='관'){fg(.22);gain('정',.2);}
     else if(P.path==='상'){P.wealth=Math.max(0,P.wealth+Math.round((R()*.09-.025)*Math.max(P.wealth,10)));gain('정',.15);}
     else if(P.path==='적'){P.wealth+=rint(0,4);fg(.3);if(R()<.06)hurt(rint(5,15),'관군의 화살');}
   }
-  else if(f==='arms'){gain('무',.45);gain('통',.2);if(R()<.08)hurt(rint(3,8),'수련 중의 부상');}
-  else if(f==='study'){gain('지',.45);gain('정',.25);if(R()<.3)P.wealth=Math.max(0,P.wealth-1);}
-  else if(f==='social'){gain('매',.45);if(R()<.5)P.wealth=Math.max(0,P.wealth-1);const ns=(P.npcs||[]).filter(n=>n.alive);if(ns.length&&R()<.25){const x=pick(ns);x.bond=Math.min(5,x.bond+1);}fg(.15);}
+  else if(f==='arms'){gain('무',.32);gain('통',.14);if(R()<.08)hurt(rint(3,8),'수련 중의 부상');}
+  else if(f==='study'){gain('지',.32);gain('정',.16);if(R()<.3)P.wealth=Math.max(0,P.wealth-1);}
+  else if(f==='social'){gain('매',.32);if(R()<.5)P.wealth=Math.max(0,P.wealth-1);const ns=(P.npcs||[]).filter(n=>n.alive);if(ns.length&&R()<.25){const x=pick(ns);x.bond=Math.min(5,x.bond+1);}fg(.15);}
   else if(f==='rest'){P.hp=Math.min(maxHp(),P.hp+7);}
   if(farmer&&f!=='work'&&P.season===2)P.wealth+=1;
   const ms={arms:[12,'m_arms'],study:[12,'m_study'],social:[12,'m_social'],work:[16,'m_work']}[f];
@@ -3920,6 +3922,9 @@ function yearly(){
   if(P.hp<=0)return die2(P.deathCause||'병');
   if(P.age>=1&&P.age<=5&&R()<.003){P.flags.early=1;return die2('어린 날의 돌림병');}
   if(P.age===5)addLog('다섯 살을 넘겼다. 이 시대 아이 셋 중 하나는 이 나이를 넘기지 못했다.','key');
+  if(P.age>=48&&R()<.6)P.s.무=Math.max(1,P.s.무-1);
+  if(P.age>=55&&R()<.4)P.s.통=Math.max(1,P.s.통-1);
+  if(P.age>=65&&R()<.35){const k=pick(['지','정']);P.s[k]=Math.max(1,P.s[k]-1);}
   if(P.age>=45){
     const p=(P.age-45)*.011+(P.hp<30?.08:0)-(P.wealth>60?.01:0);
     if(R()<p*((P.traits||[]).includes('무병장수')?.6:1)||P.age>=100)return die2(P.age>=58?'천수':'병');
@@ -3981,7 +3986,7 @@ function pickEvent(){
 /* ===================== 사건 화면 ===================== */
 let curChoices=[];
 function showEvent(e){
-  curEv=e;P.done.push(e.id);if(!e.prio)P.cool[e.id]=P.year+(e.cd||CD_DEF[e.id]||7);P.tmp._lc=(P.later||[]).length;
+  curEv=e;P.tmp._s0=Object.assign({},P.s);P.done.push(e.id);if(!e.prio)P.cool[e.id]=P.year+(e.cd||CD_DEF[e.id]||7);P.tmp._lc=(P.later||[]).length;
   $('#evSeal').innerHTML=`${e.han}<small>${e.hr||HR[e.han]||''}</small>`;$('#evTitle').textContent=e.title;
   $('#evText').innerHTML=gl(esc(e.text()));$('#vs').hidden=true;
   const sy=(e.say||SAY[e.id])?(e.say||SAY[e.id])():null;$('#say').hidden=!sy;
@@ -4038,6 +4043,8 @@ const CD_DEF={battle:2,field:2,sick:5,bandit:5,trade:3,raid:2,conscript:4,lawsui
 const RANKCAP={e_grainskim:3,e_lastwill:3,e_spysuspect:3,e_leave:4,e_warhorse:5,e_deserter:3,e_letters:2,d_chupu:3,conscript:9,
   e_census:4,e_runaway:4,e_concubine:4,e_rainrite:4,e_postfraud:4,e_casebook:4,e_relief:4,e_petition:4,lawsuit:4,graft:4,gov_greedy:4,d_guosuo:4};
 function finishEvent(e,choice,txt,late){
+  const s0=P.tmp._s0;if(s0)for(const k of SK){const d=Math.round(P.s[k]-s0[k]);if(d>0){let add=0;for(let i=0;i<d;i++)if(R()<softF(s0[k]+add))add++;P.s[k]=s0[k]+add;}}
+  P.tmp._s0=null;
   if(!e.prio&&(P.later||[]).length>(P.tmp._lc||0))P.cool[e.id]=P.year+25;
   for(const k in P.s)P.s[k]=clamp(Math.round(P.s[k]),1,99);
   P.wealth=Math.max(0,Math.round(P.wealth));P.fame=Math.max(0,Math.round(P.fame));
