@@ -400,7 +400,8 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 /* ===================== 데이터 ===================== */
 const STATUS=[
   {id:'유민',p:.06,w:3,b:{}},
-  {id:'소작농',p:.55,w:8,b:{}},
+  {id:'노비',p:.03,w:1,b:{}},
+  {id:'소작농',p:.52,w:8,b:{}},
   {id:'자작농',p:.20,w:15,b:{}},
   {id:'장인',p:.06,w:18,b:{지:3,정:2}},
   {id:'상인',p:.05,w:35,b:{정:6,지:3}},
@@ -467,6 +468,9 @@ const GUN=[
 ];
 const GUNMAP={};GUN.forEach(g=>GUNMAP[g[0]]=g);
 const gunsOf=r=>GUN.filter(g=>g[1]===r);
+/* 곡식 값(평년=1). 흥평 원년(194) 관중은 후한서 헌제기에 곡식 한 휘 50만 전으로 적혀 있다 */
+function grainIdx(g,y,gs){const G=GUNMAP[g];if(y===194&&G&&['사례','량주'].includes(G[1]))return 25;
+  gs=gs||gunState(g,y);return (gs.harvest==='흉년'?2.5:gs.harvest==='풍년'?.7:1)*(gs.war?1.8:1);}
 /* 후한서 군국지, 영화 5년(140) 호구 조사의 인구(口). 태어날 고을은 이 인구에 비례해 정해진다 */
 const GUNPOP={'하남윤':1010827,'하내군':801558,'하동군':570803,'홍농군':199113,'경조윤':285574,'좌풍익':145195,'우부풍':93091,'영천군':1436513,'여남군':2100788,'양국':431283,'패국':251393,'진국':1547572,'노국':411590,'위군':695606,'조국':188381,'거록군':602096,'상산국':631184,'중산국':658195,'안평국':655118,'하간국':634421,'청하국':760418,'발해군':1106500,'진류군':869433,'동군':603393,'제음군':657554,'산양군':606091,'임성국':194156,'동평국':448270,'제북국':235897,'태산군':437317,'동해군':706416,'낭야국':570967,'팽성국':493027,'하비국':611083,'광릉군':410190,'평원군':1002658,'제남국':453308,'낙안국':424075,'제국':491765,'북해국':853604,'동래군':484393,'남양군':2439618,'남군':747604,'강하군':265464,'무릉군':250913,'장사군':1059372,'영릉군':1001578,'계양군':501403,'구강군':432426,'여강군':424683,'단양군':630545,'오군':700782,'회계군':481196,'예장군':1668906,'한중군':267402,'파군':1086049,'광한군':509438,'촉군':1350476,'건위군':411378,'월수군':623418,'장가군':267253,'익주군':110802,'영창군':1897344,'무도군':81728,'한양군':130138,'농서군':29637,'안정군':29060,'북지군':18637,'금성군':18947,'무위군':34226,'장액군':26040,'주천군':50000,'상당군':127403,'태원군':200124,'서하군':20838,'상군':28599,'안문군':249000,'정양군':13571,'운중군':26430,'오원군':22957,'삭방군':7843,'탁군':633754,'광양군':280600,'대군':126188,'상곡군':51204,'어양군':435740,'우북평군':53475,'요서군':81714,'요동군':81714,'현도군':43163};
 REGIONS.forEach(r=>r.w=gunsOf(r.id).reduce((a,g)=>a+(GUNPOP[g[0]]||1e5),0)/1e5);
@@ -715,6 +719,7 @@ const GL={
  황건:'184년 태평도 신도들이 누런 두건을 두르고 일으킨 대규모 민란.',
  '명문 사족':'대대로 학문과 높은 관직을 이어 온 가문. 원소의 원씨, 사마의의 사마씨 등.',사족:'대대로 학문과 관직을 이어 온 가문.',
  '지방 호족':'지방에서 넓은 땅과 사병을 거느린 유력 가문.',아전:'지방 관청의 실무를 맡던 하급 관리 집안.',
+ 노비:'주인에게 매인 사람. 사고팔렸고 호적도 주인 밑에 올랐다. 후한 말 호족들은 노비 수백, 수천을 거느렸다.',면천:'노비 신분에서 풀려나 양민이 되는 일.',
  유민:'전란과 기근으로 고향을 떠나 떠도는 백성.',소작농:'남의 땅을 빌려 농사짓고 수확의 절반가량을 바치는 농민.',자작농:'제 땅을 가진 농민.',
  '한실 종친':'한나라 황실 유씨의 먼 친척. 유비도 스스로 중산정왕의 후손이라 했다.',
  '자(字)':'어른이 되면 본명 대신 부르는 이름. 본명을 함부로 부르는 것은 실례였다. 조운의 자는 자룡.',
@@ -940,6 +945,7 @@ function pop(){
 }
 const inR=(...r)=>r.includes(P.region);
 function title(){
+  if(P.path==='민'&&P.flags&&P.flags.nobi) return '노비';
   if(P.path==='민') return P.wealth<5?'유민':P.wealth<15?'빈농':P.wealth<50?'농민':P.wealth>=500?'대지주':P.fame>25?'향촌 유지':'부농';
   if(P.path==='상') return P.wealth<40?'행상':P.wealth<150?'상인':P.wealth<1000?'거상':P.wealth<10000?'대상(大商)':'천하의 거부';
   return RANKS[P.path][P.rank];
@@ -953,7 +959,8 @@ function fullTitle(){
   if(P.path==='적') return (P.flags.yellow?'황건 ':'산적 ')+title();
   return facTitle(ruler(),P.path,title(),P.region);
 }
-function setPath(p){ if(P.path!==p){P.path=p;P.rank=0;if(p==='적')P.fame=Math.round(P.fame*.5);if(P.fc)P.fc.work=0;} if(P.npcs)ensureMentor(p); }
+function freeNobi(){P.flags.nobi=0;if(P.post&&P.post.path==='민'){P.post.rent=15;}}
+function setPath(p){ if(P.path!==p&&p!=='민'&&P.flags.nobi){P.flags.nobi=0;addLog('주인집을 떠났다. 다시는 노비로 돌아가지 않았다.','key');} if(P.path!==p){P.path=p;P.rank=0;if(p==='적')P.fame=Math.round(P.fame*.5);if(P.fc)P.fc.work=0;} if(P.npcs)ensureMentor(p); }
 function moveTo(r){P.region=r;const g=gunsOf(r);if(g.length){P.gun=pick(g)[0];P.county=P.gun;}return r;}
 function moveRandom(){return moveTo(pick(REGIONS.filter(x=>x.id!==P.region)).id);}
 function hurt(n,cause){if((P.traits||[]).includes('의술')&&/열병|역병/.test(cause))n=Math.round(n/2);P.hp-=n;if(P.hp<=0){P.hp=0;P.deathCause=cause;}}
@@ -3718,6 +3725,17 @@ const EV=[
      {l:'품을 사서 크게 개간한다',req:()=>P.wealth>=20,rq:'2만 전 필요',act:()=>{P.wealth-=15;P.post.land+=rint(20,35);return '일꾼들을 부려 넓은 땅을 일구었다.'}},
      {l:'주인이 돌아올까 겁나 그만둔다',act:()=>'남의 땅에 손대지 않았다.'}],
  to:()=>'이웃들이 먼저 차지했다.'},
+{id:'nb_free',w:6,cd:4,when:()=>P.flags.nobi&&P.age>=15&&P.age<=45,time:7,title:'노비 문서',han:'券',hr:'권',
+ text:()=>'주인집 광 깊숙이 노비 문서가 있다. 당신 이름도 그 대나무 쪽 어딘가에 적혀 있다.',
+ ch:[{l:'주인을 위해 몸을 아끼지 않는다',st:'매',d:60,act:ok=>{if(ok){freeNobi();P.wealth+=3;return '주인이 그간의 수고를 갚겠다며 문서를 불살랐다. 양민이 되어 소작할 땅을 얻었다.'}P.s.매+=1;return '주인은 고개만 끄덕였다. 문서는 광에 그대로 있다.'}},
+     {l:'품삯을 모아 몸값을 치른다',req:()=>P.wealth>=8,rq:'8천 전 필요',act:()=>{P.wealth-=6;freeNobi();return '몇 해 모은 돈을 다 내고 제 이름을 문서에서 지웠다.'}},
+     {l:'밤에 달아난다',p:.6,act:ok=>{if(ok){freeNobi();moveRandom();P.wealth=Math.max(P.wealth,3);return `${P.region} 땅까지 달아나 이름을 바꾸고 유민 무리에 섞였다.`}hurt(25,'주인의 매질');return '사흘 만에 붙잡혀 돌아왔다. 등에 매 자국이 남았다.'}}],
+ to:()=>'오늘도 주인의 수레를 끌었다.'},
+{id:'nb_war',w:5,once:1,when:()=>P.flags.nobi&&P.age>=16&&P.year>=184,time:7,title:'가병',han:'兵',hr:'병',
+ text:()=>'난리가 나자 주인이 노비들 가운데 힘센 자를 골라 창을 쥐여 준다. 공을 세우면 풀어 주겠다고 한다.',
+ ch:[{l:'창을 받는다',act:()=>{setPath('군');P.s.무+=2;return '주인의 가병이 되어 싸움터로 나갔다.'}},
+     {l:'병든 척 빠진다',st:'지',d:45,act:ok=>{if(ok)return '열이 난다며 드러누웠다. 다른 노비가 대신 끌려갔다.';hurt(15,'주인의 매질');return '꾀병이 들통나 매를 맞았다.'}}],
+ to:()=>{setPath('군');return '머뭇거리는 사이 창이 손에 쥐여졌다.'}},
 ];
 
 /* ===================== 살아 있는 세계: 고을·계절·가족·사람 ===================== */
@@ -3888,6 +3906,7 @@ const JOBS={
    ['나무꾼','도끼로 나무를 패는','땔감 지게를 지는',{무:2}],['사냥꾼','덫을 놓는','활시위를 고르는',{무:3},'궁술'],['소금밭 일꾼','염전에 바닷물을 대는','소금 짐을 나르는'],['뽕밭 일꾼','뽕잎을 따는','누에섶을 엮는']],
  자작농:[['자작농','쟁기질하는','타작하는'],['과수원지기','배나무 가지를 치는','대추를 터는'],['양봉꾼','벌통을 들여다보는','꿀을 뜨는'],['목동','양 떼를 모는','말발굽을 살피는',{무:2},'기마'],
    ['어부','그물을 깁는','고깃배를 띄우는'],['약초꾼','산에서 약초를 캐는','약초를 말리는',{지:1},'의술'],['방앗간 주인','맷돌을 돌리는','곡식을 빻아 주는',{정:1}]],
+ 노비:[['가노','주인집 마당을 쓰는','주인의 수레를 끄는'],['장원 노비','주인의 밭을 가는','주인 댁 곡식 섬을 나르는',{무:1}],['관노','관청 마구간을 치우는','관아에 물을 길어 나르는'],['몸종','주인 도련님의 책 상자를 지는','주인 곁에서 시중드는',{지:2}]],
  유민:[['떠돌이 품팔이','남의 밭에서 품을 파는','이삭을 줍는'],['광대','장터에서 재주를 넘는','북을 치며 노래하는',{매:3}],['지게꾼','남의 짐을 지는','고갯길을 오르내리는',{무:2}],['부역 도망자','관리를 피해 숨는','이름을 숨기고 일하는',{지:1}]],
  장인:[['대장장이','쇠를 두드리는','풀무질을 하는',{무:3}],['옹기장이','독을 굽는','흙을 이기는'],['목수','대패질을 하는','기둥을 다듬는',{통:2}],['칠장이','옻칠을 하는','칠기를 닦는'],
    ['비단 직공','베틀에 앉아 비단 무늬를 짜는','실을 염색하는'],['궁장','활을 만드는','시위를 거는',{무:2},'궁술'],['붓·먹 장인','붓털을 고르는','먹을 개는',{지:3}],['석공','돌을 쪼는','비석에 글자를 새기는',{지:2}]],
@@ -4073,6 +4092,7 @@ function newLife(){
   if(P.gifted)P.pot[P.gifted]=99;
   if(!P.legend&&R()<.012){P.genius=SK.slice().sort(()=>R()-.5).slice(0,3);for(const k of P.genius){P.pot[k]=98;P.s[k]=Math.min(85,P.s[k]+15);}P.birthP*=.012;}
   if(P.legend)for(const k of SK)P.pot[k]=Math.min(100,P.s[k]+3);
+  if(P.status==='노비')P.flags.nobi=1;
   P.home=P.region+' '+P.gun;
   addLog('','register',{html:registerHTML()});
   P.npcs=[mkNpc('동무',P.born+rint(-2,2)),mkNpc('라이벌',P.born+rint(-1,1))];
@@ -4130,14 +4150,19 @@ function tick(){
   schedule();
 }
 function yearly(){
-  let inc=P.age<15?1:({민:rint(-3,4)+(P.flags.tuntian?2:0),군:3+Math.floor(P.rank*.6),관:2+Math.floor(P.rank*1.5),상:rint(-5,9)+Math.round(P.wealth*(R()*.17-.05)),적:rint(-6,8)}[P.path]);
+  let inc=P.age<15||P.flags.nobi?(P.flags.nobi?0:1):({민:rint(-3,4)+(P.flags.tuntian?2:0),군:3+Math.floor(P.rank*.6),관:2+Math.floor(P.rank*1.5),상:rint(-5,9)+Math.round(P.wealth*(R()*.17-.05)),적:rint(-6,8)}[P.path]);
   P.wealth=Math.max(0,P.wealth+inc);
   const gs=P.gun?gunState(P.gun,P.year):null;
   if(gs&&P.age>=15){if(P.path==='민')P.wealth=Math.max(0,P.wealth+(gs.harvest==='흉년'?-4:gs.harvest==='풍년'?4:0));
     if(P.gov&&P.gov.trait==='탐욕'&&['민','상'].includes(P.path))P.wealth=Math.max(0,P.wealth-2);if(P.gov&&P.gov.trait==='청렴'&&P.path==='민')P.wealth+=1;}
   if(gs&&gs.war&&['민','상'].includes(P.path)&&P.age>=6&&R()<.35)hurt(rint(3,12),'전란');
+  if(gs&&P.age>=10&&!P.flags.nobi){const gi=grainIdx(P.gun,P.year,gs);
+    if(gi>1.5){const q=P.post||{},own=P.path==='민'&&(q.land||0)>=20,fam=1+(P.married?.5:0)+(P.kids||[]).filter(k=>k.alive&&P.year-k.b<16).length*.3;
+      const cost=own?0:Math.round((gi-1)*.6*fam);if(cost)P.wealth=Math.max(0,P.wealth-cost);
+      if(gi>=20&&!P.flags['gr'+P.year]){P.flags['gr'+P.year]=1;addLog('곡식 한 휘(斛)에 50만 전, 콩과 보리도 20만 전이다. 길에 쓰러진 사람이 일어나지 못한다.','key');}
+      else if(gi>=2.5&&cost&&R()<.5)addLog(`곡식 값이 평소의 ${Math.round(gi)}배로 뛰어 ${money(cost)}이 더 들었다.`,'flow');}}
   const mh=maxHp();
-  if(P.wealth<=2&&P.age>=10){hurt(10,'굶주림');if(P.alive&&P.hp>0)addLog('먹을 것이 없어 굶주렸다.','flow');}
+  if(P.wealth<=2&&P.age>=10&&!P.flags.nobi){hurt(10,'굶주림');if(P.alive&&P.hp>0)addLog('먹을 것이 없어 굶주렸다.','flow');}
   else P.hp=Math.min(mh,P.hp+(P.age<40?8:4));
   if(P.hp>mh)P.hp=mh;
   if(P.hp<=0)return die2(P.deathCause||'병');
@@ -4148,8 +4173,9 @@ function yearly(){
   if(P.age>=48&&R()<.6&&P.s.무>1){P.s.무--;yg('무',-1);}
   if(P.age>=55&&R()<.4&&P.s.통>1){P.s.통--;yg('통',-1);}
   if(P.age>=65&&R()<.35){const k=pick(['지','정']);if(P.s[k]>1){P.s[k]--;yg(k,-1);}}
-  if(P.age>=45){
-    const p=(P.age-45)*.011+(P.hp<30?.08:0)-(P.wealth>60?.01:0);
+  /* 어른의 해마다 사망률: 고대 인구의 모형 생명표(평균 수명 25세 안팎 수준)에 맞춘 곡선. 40세 2%, 50세 3%, 60세 6%, 70세 13% */
+  if(P.age>=15){
+    const p=.004+.0007*Math.exp(.075*P.age)+(P.hp<30?.08:0)-(P.wealth>60?.005:0)+(P.wealth<5?.005:0);
     if(R()<p*((P.traits||[]).includes('무병장수')?.6:1)||P.age>=100)return die2(P.age>=58?'천수':'병');
   }
   if(!P.away&&['군','관'].includes(P.path)&&P.age>=15){const g=P.fame-(P.fameMark==null?P.fame:P.fameMark);
