@@ -83,6 +83,7 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
 .meter i{position:absolute;inset:0 auto 0 0;background:var(--ink-soft);transition:width .4s}
 .st.hp .meter i{background:var(--blood)}
 .st.wl .meter i{background:var(--brass)}
+.st.fm .meter i{background:var(--cinnabar,#9a3b2e)}
 
 .chron{flex:1;min-height:0;overflow-y:auto;margin:0;padding:6px 0 12px;list-style:none;scroll-behavior:smooth}
 .chron li{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;padding:7px 0;border-bottom:1px solid var(--line);animation:in .35s ease-out}
@@ -105,7 +106,7 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
 .profile{flex-direction:row;align-items:center;gap:12px}
 .prof-l{flex:none;width:min(46%,230px)}
 .prof-r{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
-.profile .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.profile .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
 .radar{display:block;width:100%;height:auto;overflow:visible}
 .radar .rg{fill:none;stroke:var(--line);stroke-width:.7}
 .radar .rv{fill:var(--bronze);fill-opacity:.22;stroke:var(--bronze);stroke-width:1.5;stroke-linejoin:round}
@@ -135,6 +136,13 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
 .focus{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-family:var(--f-ui);font-size:12px}
 .focus b{font-weight:400;color:var(--ink-soft);margin-right:2px}
 .focus button{border:1px solid var(--line);background:transparent;padding:2px 8px;border-radius:2px;font:inherit;color:var(--ink)}
+.duty{font-family:var(--f-ui);font-size:12px;padding:6px 0;border-bottom:1px solid var(--line)}
+.duty summary{cursor:pointer;list-style:none;color:var(--ink)}.duty summary::-webkit-details-marker{display:none}
+.duty summary b{font-weight:400;color:var(--ink-soft);margin-right:6px}.duty summary::after{content:' ▾';color:var(--ink-soft)}
+.duty[open] summary::after{content:' ▴'}.duty p{margin:6px 0;color:var(--ink-soft);line-height:1.5}
+.duty .dr{display:grid;grid-template-columns:4.5em 6em 1fr;gap:6px;padding:3px 0;border-bottom:1px solid var(--line)}.duty .dr em{font-style:normal;color:var(--ink-soft)}
+.fxl{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;font-family:var(--f-ui);font-size:11px}
+.fxl span{padding:0 6px;border-radius:2px;border:1px solid}.fxl .up{color:#2f6b4a;border-color:#2f6b4a55}.fxl .dn{color:#9a3b2e;border-color:#9a3b2e55}
 .focus button.on{background:var(--bronze);border-color:var(--bronze);color:var(--paper)}
 .namebox{display:flex;gap:8px;align-items:center}
 .nsur{font-family:var(--f-disp);font-size:24px;flex:none}
@@ -237,6 +245,7 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
 .toast{font-family:var(--f-ui);font-size:13px;color:var(--bronze)}
 
 @media (max-width:440px){
+  .profile .stats{grid-template-columns:1fr}
   .stats{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
   .st .lab{font-size:11px}
   .chron li{grid-template-columns:52px minmax(0,1fr);gap:10px}
@@ -308,6 +317,7 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
         <div class="focus" id="focus" hidden></div>
       </div>
     </div>
+    <details class="duty" id="duty" hidden><summary><b>직무</b><span id="dutyS"></span></summary><div id="dutyD"></div></details>
     <div class="map-pane" id="mapPane" hidden>
       <h2 id="mapCap">세력도</h2>
       <canvas class="mapcv" id="gameMap" width="1032" height="808" role="img" aria-label="현재 세력 지도"></canvas>
@@ -760,7 +770,7 @@ function battleCfg(bt){
     acts:[{id:'chg',l:'돌격',hint:'계략을 짓밟는다 · 무력'},{id:'form',l:'진형 유지',hint:'돌격을 막는다 · 통솔'},{id:'fire',l:bt.ter.n==='숲'?'화계':'계략',hint:'진형을 흔든다 · 지력'}],
     beats:{chg:'fire',form:'chg',fire:'form'},mul:{chg:1.7,form:1.5,fire:1.8},tie:{form:.4},
     pow:(w,a,V)=>{if(!a)return 0;const my=Math.max(10,statT(ST[a])),fo=bt.fs[ST[a]],tm=bt.ter.m[a]||1;
-      return w==='me'?V.me*.13*Math.pow(my/fo,.8)*tm:V.foe*.13*Math.pow(fo/my,.8)*tm;},
+      return w==='me'?V.me*.13*Math.pow(my/fo,.8)*tm*(bt.qm||1):V.foe*.13*Math.pow(fo/my,.8)*tm;},
     tells:{chg:['적의 기병이 앞으로 몰린다.','적진에서 돌격 북이 울린다.'],form:['적이 방진을 굳게 짠다.','적의 창끝이 고슴도치처럼 선다.'],fire:['적진 뒤에서 연기가 피어오른다.','적의 궁수들이 기름 단지를 나른다.']},
     say2:(k,m,f,dm,df)=>{const L={chg:'돌격',form:'방진',fire:bt.ter.n==='숲'?'화계':'계략'};
       if(k==='idle')return `명령이 늦었다. 적의 ${L[f]}에 아군이 무너진다. (아군 -${dm.toLocaleString()})`;
@@ -906,7 +916,7 @@ function fullTitle(){
   if(P.path==='적') return (P.flags.yellow?'황건 ':'산적 ')+title();
   return facTitle(ruler(),P.path,title(),P.region);
 }
-function setPath(p){ if(P.path!==p){P.path=p;P.rank=0;P.fame=Math.round(P.fame*.5);if(P.fc)P.fc.work=0;} if(P.npcs)ensureMentor(p); }
+function setPath(p){ if(P.path!==p){P.path=p;P.rank=0;if(p==='적')P.fame=Math.round(P.fame*.5);if(P.fc)P.fc.work=0;} if(P.npcs)ensureMentor(p); }
 function moveTo(r){P.region=r;const g=gunsOf(r);if(g.length){P.gun=pick(g)[0];P.county=P.gun;}return r;}
 function moveRandom(){return moveTo(pick(REGIONS.filter(x=>x.id!==P.region)).id);}
 function hurt(n,cause){if((P.traits||[]).includes('의술')&&/열병|역병/.test(cause))n=Math.round(n/2);P.hp-=n;if(P.hp<=0){P.hp=0;P.deathCause=cause;}}
@@ -1135,7 +1145,7 @@ const EV=[
      {l:'양쪽을 달래 화해시킨다',st:'정',d:45,act:ok=>{if(ok){P.fame+=4;P.wealth+=4;return '농부는 땅값 일부를, 당신은 사례를 받았다.'}P.fame=Math.max(0,P.fame-2);return '양쪽 모두 불만이었다. 우유부단하다는 평이 돌았다.'}}],
  to:()=>{later('f1_lawsuit_farmer',rint(4,7),{n:P.tmp.farmer});return '판결을 미루는 사이 농부가 소송을 포기했다.'}},
 {id:'riot',w:2,when:()=>P.path==='관'&&P.rank>=2&&P.year>=184,time:6,title:'민란',han:'亂',hr:'란',
- text:()=>'현에 민란이 일어났다. 현령은 이미 성을 버리고 달아났다. 성난 백성들이 관아로 몰려온다.',
+ text:()=>`${P.post&&P.post.where?P.post.where:'현'}에 민란이 일어났다.${P.post&&P.post.minsim!=null?` 민심이 ${P.post.minsim}까지 떨어져 있었다.`:''} 성난 백성들이 관아로 몰려온다.`,
  ch:[{l:'관창을 열어 곡식을 나눈다',st:'매',d:50,act:ok=>{if(ok){P.fame+=10;later('f1_riot_audit',rint(1,2),{});return '백성들이 무기를 내려놓았다.'}hurt(30,'민란');return '곡식만 털리고 얻어맞았다.'}},
      {l:'병졸을 모아 진압한다',st:'통',d:50,act:ok=>{if(ok){P.fame+=8;P.s.매-=2;return '주모자의 목을 성문에 걸었다.'}hurt(35,'민란');return '병졸들이 먼저 달아났다.'}},
      {l:'현령을 따라 달아난다',act:()=>{P.fame=Math.max(0,P.fame-6);return '목숨은 건졌지만 체면을 잃었다.'}}],
@@ -1190,10 +1200,10 @@ const EV=[
      {l:'이야기꾼에게 동전을 던져 준다',act:()=>{P.wealth=Math.max(0,P.wealth-1);P.s.매+=2;return '이야기꾼이 당신을 향해 크게 절했다. 다음 대목은 당신 마을 이야기라고 했다.'}}],
  to:()=>'이야기꾼은 벌써 다음 대목으로 넘어갔다.'},
 {id:'field',w:9,when:()=>P.path==='군'&&P.rank>=4&&P.year>=184,time:7,title:'출진',han:'陣',hr:'진',
- text:()=>{const A=Math.round([0,0,0,0,600,1500,3500,6000,12000,30000][P.rank]*(.7+R()*.6)/10)*10,E=Math.round(A*(.6+R()*1.2)/10)*10;
-   P.tmp.bt={A,E,enemy:enemyOf(),ter:pick(TERR),fs:{통:rint(40,85),무:rint(40,85),지:rint(40,85)}};
-   return `${P.tmp.bt.enemy}의 군세가 다가온다. 그대가 이끄는 병력은 ${A.toLocaleString()}명.`;},
- ch:[{l:'출진하여 맞선다',vs:()=>battleCfg(P.tmp.bt),after:r=>{const b=P.tmp.bt,kill=Math.round(b.E-r.foe),lost=Math.round(b.A-r.me);
+ text:()=>{ensurePost();const q=P.post,A=q&&q.troops?q.troops:Math.round([0,0,0,0,600,1500,3500,6000,12000,30000][P.rank]*(.7+R()*.6)/10)*10,E=Math.round(A*(.6+R()*1.2)/10)*10;
+   P.tmp.bt={A,E,qm:q&&q.train!=null?.6+q.train/250+q.morale/250:1,enemy:enemyOf(),ter:pick(TERR),fs:{통:rint(40,85),무:rint(40,85),지:rint(40,85)}};
+   return `${P.tmp.bt.enemy}의 군세 ${E.toLocaleString()}이 다가온다. 그대가 이끄는 병력은 ${A.toLocaleString()}명${q&&q.train!=null?`, 훈련 ${q.train} 사기 ${q.morale}`:''}.`;},
+ ch:[{l:'출진하여 맞선다',vs:()=>battleCfg(P.tmp.bt),after:r=>{const b=P.tmp.bt,kill=Math.round(b.E-r.foe),lost=Math.round(b.A-r.me);if(P.post&&P.post.troops!=null){P.post.troops=Math.max(Math.round(b.A*.15),Math.round(r.me));P.post.morale=c100(P.post.morale+(r.win?10:r.draw?0:-15));P.post.train=c100(P.post.train+2);}
        if(r.win){P.fame+=6+Math.min(14,Math.round(b.E/700));P.wealth+=3;return `적 ${kill.toLocaleString()}명을 베고 이겼다. 아군 손실 ${lost.toLocaleString()}명.`}
        if(r.draw){P.fame+=2;return `승부를 가리지 못하고 양군이 물러났다. 아군 손실 ${lost.toLocaleString()}명.`}
        P.fame=Math.max(0,P.fame-4);if(r.koMe&&R()<.12){die(`${b.enemy}군과의 패전`);return '패주하는 아군 속에서 쓰러졌다.'}
@@ -1477,10 +1487,10 @@ const EV=[
  to:()=>'칭찬을 들은 척도 하지 않았다.'},
 {id:'t_nongsang',season:0,w:7,cd:3,when:()=>P.path==='관'&&P.rank>=5,time:8,title:'권농',han:'農',hr:'농',
  text:()=>`봄이다. ${P.gun}의 ${title()}로서 올해 고을 살림의 방침을 정해야 한다. 아전들이 죽간을 들고 기다린다.`,
- ch:[{l:'둑과 도랑을 고친다',st:'정',d:50,act:ok=>{if(ok){P.flags.minsim=(P.flags.minsim||0)+1;P.fame+=5;later('t_songdeok',rint(3,5),{});return '봇물이 논마다 닿았다. 가을 소출이 늘었다.'}P.fame+=1;return '공사가 장마 전에 끝나지 못했다.'}},
+ ch:[{l:'둑과 도랑을 고친다',st:'정',d:50,act:ok=>{if(ok){msim(+1);P.fame+=5;later('t_songdeok',rint(3,5),{});return '봇물이 논마다 닿았다. 가을 소출이 늘었다.'}P.fame+=1;return '공사가 장마 전에 끝나지 못했다.'}},
      {l:'둔전을 넓혀 군량을 쌓는다',st:'통',d:50,act:ok=>{if(ok){P.fame+=8;return `군량 창고가 찼다. ${ruler()==='한'?'조정':ruler()}에서 칭찬하는 글이 내려왔다.`}P.fame+=2;return '유민들이 둔전에서 달아났다.'}},
-     {l:'세금을 줄여 백성을 쉬게 한다',act:()=>{P.flags.minsim=(P.flags.minsim||0)+1;P.s.매+=2;P.fame+=2;later('t_songdeok',rint(3,5),{});return '달아났던 백성들이 돌아와 호적에 다시 올랐다.'}},
-     {l:'호족들과 연회를 열어 친분을 다진다',act:()=>{P.wealth+=15;P.flags.minsim=(P.flags.minsim||0)-1;return '호족들이 비단과 금을 들고 왔다. 백성들은 관아 담장 너머로 풍악 소리를 들었다.'}}],
+     {l:'세금을 줄여 백성을 쉬게 한다',act:()=>{msim(+1);P.s.매+=2;P.fame+=2;later('t_songdeok',rint(3,5),{});return '달아났던 백성들이 돌아와 호적에 다시 올랐다.'}},
+     {l:'호족들과 연회를 열어 친분을 다진다',act:()=>{P.wealth+=15;msim(-1);return '호족들이 비단과 금을 들고 왔다. 백성들은 관아 담장 너머로 풍악 소리를 들었다.'}}],
  to:()=>'아전들이 작년 방침대로 꾸렸다.'},
 {id:'t_songdeok',when:()=>false,time:8,title:'송덕비',han:'碑',hr:'비',
  text:()=>(P.flags.minsim||0)>=2?'고을 노인들이 돈을 모아 당신의 덕을 기리는 비석을 세우겠다고 한다.':'고을 노인들이 찾아와 지난 몇 해의 다스림에 고마움을 전했다.',
@@ -1489,9 +1499,9 @@ const EV=[
  to:()=>'노인들은 뜻만 전하고 돌아갔다.'},
 {id:'t_haozu',w:5,cd:6,when:()=>P.path==='관'&&P.rank>=5,time:8,title:'호족의 담장',han:'豪',hr:'호',
  text:()=>{P.tmp.hz=pick(SURN);return `${P.tmp.hz}씨 일족이 높은 담장 안에 부곡 수백을 두고 세금도 부역도 내지 않는다. 고을이 지켜본다.`},
- ch:[{l:'군사를 내어 담장을 헌다',st:'통',d:60,act:ok=>{if(ok){P.fame+=10;P.flags.minsim=(P.flags.minsim||0)+1;later('t_haozu_rev',rint(2,5),{h:P.tmp.hz});return '부곡은 흩어지고 숨겼던 백 호가 호적에 올랐다.'}hurt(25,'부곡의 화살');P.fame=Math.max(0,P.fame-4);return '담장 위에서 화살이 쏟아졌다. 물러날 수밖에 없었다.'}},
+ ch:[{l:'군사를 내어 담장을 헌다',st:'통',d:60,act:ok=>{if(ok){P.fame+=10;msim(+1);later('t_haozu_rev',rint(2,5),{h:P.tmp.hz});return '부곡은 흩어지고 숨겼던 백 호가 호적에 올랐다.'}hurt(25,'부곡의 화살');P.fame=Math.max(0,P.fame-4);return '담장 위에서 화살이 쏟아졌다. 물러날 수밖에 없었다.'}},
      {l:'그 집안과 혼인으로 묶는다',st:'매',d:50,act:ok=>{if(ok){P.wealth+=20;P.fame+=3;return '사돈이 된 뒤로 세금이 꼬박꼬박 들어왔다.'}return '격이 맞지 않는다며 거절당했다.'}},
-     {l:'눈감아 준다',act:()=>{P.wealth+=10;P.flags.minsim=(P.flags.minsim||0)-1;return '해마다 명절이면 그 집에서 수레가 왔다.'}}],
+     {l:'눈감아 준다',act:()=>{P.wealth+=10;msim(-1);return '해마다 명절이면 그 집에서 수레가 왔다.'}}],
  to:()=>'결정을 미루는 사이 그 집 담장은 한 자 더 높아졌다.'},
 {id:'t_haozu_rev',when:()=>false,time:7,title:'호족의 앙갚음',han:'讐',hr:'수',
  text:()=>`담장이 헐린 ${P.tmp.q.h||'호족'}씨 일족이 낙양과 업의 연줄을 움직였다. 당신을 탄핵하는 글이 올라갔다고 한다.`,
@@ -1501,9 +1511,9 @@ const EV=[
  to:()=>{P.rank=Math.max(0,P.rank-1);return '변명할 틈도 없이 한 계급 깎였다.'}},
 {id:'t_levy',w:6,cd:4,when:()=>P.path==='관'&&P.rank>=5&&ruler()!=='한'&&P.year>=190,time:7,title:'군량 독촉',han:'糧',hr:'량',
  text:()=>`${ruler()}의 사자가 왔다. 전선에 보낼 군량 삼만 석을 한 달 안에 내라 한다. 창고에는 그 절반뿐이다.`,
- ch:[{l:'백성의 씨곡식까지 긁어 채운다',act:()=>{P.fame+=8;P.flags.minsim=(P.flags.minsim||0)-2;return '기한을 맞췄다. 그해 봄 고을에는 뿌릴 씨앗이 없었다.'}},
-     {l:'형편을 적어 감해 달라 청한다',st:'정',d:55,act:ok=>{if(ok){P.fame+=4;P.flags.minsim=(P.flags.minsim||0)+1;return '이만 석으로 줄었다. 사자는 못마땅한 얼굴로 돌아갔다.'}P.fame=Math.max(0,P.fame-6);return '"전선의 병사는 굶는데 태수는 장부나 따지는가." 문책이 내려왔다.'}},
-     {l:'사재를 털어 모자란 만큼 사들인다',req:()=>P.wealth>=30,rq:'3만 전 필요',act:()=>{P.wealth=Math.round(P.wealth*.5);P.fame+=6;P.s.매+=3;P.flags.minsim=(P.flags.minsim||0)+1;return '집안 살림은 기울었지만 백성의 곳간은 건드리지 않았다.'}}],
+ ch:[{l:'백성의 씨곡식까지 긁어 채운다',act:()=>{P.fame+=8;msim(-2);return '기한을 맞췄다. 그해 봄 고을에는 뿌릴 씨앗이 없었다.'}},
+     {l:'형편을 적어 감해 달라 청한다',st:'정',d:55,act:ok=>{if(ok){P.fame+=4;msim(+1);return '이만 석으로 줄었다. 사자는 못마땅한 얼굴로 돌아갔다.'}P.fame=Math.max(0,P.fame-6);return '"전선의 병사는 굶는데 태수는 장부나 따지는가." 문책이 내려왔다.'}},
+     {l:'사재를 털어 모자란 만큼 사들인다',req:()=>P.wealth>=30,rq:'3만 전 필요',act:()=>{P.wealth=Math.round(P.wealth*.5);P.fame+=6;P.s.매+=3;msim(+1);return '집안 살림은 기울었지만 백성의 곳간은 건드리지 않았다.'}}],
  to:()=>{P.fame=Math.max(0,P.fame-6);return '기한을 넘겼다. 문책이 내려왔다.'}},
 {id:'t_talent',w:4,cd:6,when:()=>P.path==='관'&&P.rank>=5,time:8,title:'천거',han:'薦',hr:'천',
  text:()=>{P.tmp.tn=mkName();return `올해 천거할 사람을 정해야 한다. 가난하지만 재주가 뛰어난 ${P.tmp.tn}, 그리고 호족 집안의 평범한 자제가 물망에 올랐다.`},
@@ -3582,6 +3592,95 @@ const EV=[
      {l:'상관과 거래해 노파에게 보상만 받아 준다',st:'매',d:45,act:ok=>{if(ok){P.s.매+=2;return '호족이 노파에게 밭과 곡식을 주었다. 죄는 묻히고 노파는 굶지 않게 되었다.'}P.s.매-=1;return '상관은 당신이 옛일을 들춘다며 눈을 흘겼다.'}},
      {l:'문서를 덮고 노파에게 미안하다고만 한다',act:()=>{P.s.정-=2;P.wealth+=4;return '호족 집에서 고맙다는 인사가 왔다. 노파는 그해 겨울 세상을 떠났다.'}}],
  to:()=>'문서는 다시 서고로 들어갔다.'},
+/* ---- 직무 사건 ---- */
+{id:'o_shangji',season:3,w:6,cd:3,when:()=>P.path==='관'&&P.rank>=3&&P.post&&P.post.hu,time:8,title:'상계',han:'計',hr:'계',
+ text:()=>`해가 저문다. 올해 ${P.post.where}의 호구와 곡식, 도적의 수를 적은 계부(計簿)를 조정에 올려야 한다. 민심은 ${P.post.minsim}, 창고는 ${(P.post.grain||0).toLocaleString()}석이다.`,
+ ch:[{l:'있는 그대로 적어 올린다',act:()=>{const g=P.post.minsim>=55;P.fame+=g?6:1;return g?'정직하고 실적도 좋다는 평을 받았다.':'숫자는 초라했지만 거짓은 없었다.'}},
+     {l:'호구와 곡식을 부풀린다',st:'지',d:55,act:ok=>{if(ok){P.fame+=9;later('o_shangji_x',rint(2,5),{});return '실적이 뛰어나다며 조정에서 칭찬하는 글이 내려왔다.'}P.fame=Math.max(0,P.fame-8);return '숫자가 앞뒤가 맞지 않았다. 상계리가 고개를 저었다.'}},
+     {l:'상계리 편에 뇌물을 실어 보낸다',req:()=>P.wealth>=20,rq:'2만 전 필요',act:()=>{P.wealth-=15;P.fame+=5;return '조정의 상서랑이 계부를 대충 넘겼다.'}}],
+ to:()=>{P.fame=Math.max(0,P.fame-3);return '계부가 늦게 올라가 문책을 받았다.'}},
+{id:'o_shangji_x',when:()=>false,time:7,title:'부풀린 장부',han:'虛',hr:'허',
+ text:()=>'몇 해 전 부풀려 올린 호구 수만큼 세금을 내라는 명이 내려왔다. 실제 백성으로는 채울 수 없다.',
+ ch:[{l:'백성에게서 억지로 거둔다',act:()=>{P.post.minsim=c100(P.post.minsim-15);P.fame+=2;return '기한은 맞췄지만 고을 곳곳에서 원망이 터져 나왔다.'}},
+     {l:'창고를 털어 채운다',act:()=>{P.post.grain=Math.round((P.post.grain||0)*.5);return '창고가 반으로 줄었다.'}},
+     {l:'사실을 털어놓는다',act:()=>{P.fame=Math.max(0,P.fame-12);P.s.매+=2;return '거짓 보고의 죄로 녹봉이 깎였다.'}}],
+ to:()=>{P.post.minsim=c100(P.post.minsim-10);return '아전들이 알아서 백성을 쥐어짰다.'}},
+{id:'o_xingxian',season:0,w:5,cd:3,when:()=>P.path==='관'&&P.rank>=5&&P.rank<=6,time:8,title:'순행',han:'巡',hr:'순',
+ text:()=>`봄이면 ${P.rank===6?'자사는 군국을':'태수는 속현을'} 돌며 농사를 권하고 억울한 일을 살핀다. 길은 멀고 아전들은 가지 말자고 한다.`,
+ ch:[{l:'직접 고을마다 돌아본다',act:()=>{P.post.minsim=c100(P.post.minsim+8);P.post.chian=c100(P.post.chian+5);hurt(6,'순행길');return '수레를 타고 한 달을 돌았다. 마을 노인들이 길가에 나와 절을 했다.'}},
+     {l:'현령들을 불러 연회로 대신한다',act:()=>{P.wealth+=5;P.post.minsim=c100(P.post.minsim-3);return '현령들이 선물을 들고 왔다. 백성들은 태수 얼굴도 모른다.'}},
+     {l:'몰래 평복으로 다닌다',st:'지',d:50,act:ok=>{if(ok){P.post.minsim=c100(P.post.minsim+6);P.post.chian=c100(P.post.chian+8);P.fame+=4;return '아전들이 숨긴 비리 셋을 찾아냈다.'}P.post.chian=c100(P.post.chian-3);return '도적으로 오인받아 붙잡혔다가 풀려났다.'}}],
+ to:()=>'올해 순행은 아전들이 대신 다녀왔다.'},
+{id:'o_yuan',w:4,cd:5,when:()=>P.path==='관'&&P.rank>=2,time:8,title:'옥사 재심',han:'獄',hr:'옥',
+ text:()=>'옥에 갇힌 지 세 해 된 늙은이가 억울하다고 호소한다. 전임자가 서둘러 판결한 사건이다.',
+ ch:[{l:'문서를 다시 살펴 재심한다',st:'지',d:50,act:ok=>{if(ok){P.post.minsim=c100(P.post.minsim+6);P.fame+=4;return '진범이 따로 있었다. 늙은이는 울며 집으로 돌아갔다.'}P.fame+=1;return '증거가 모자라 판결을 뒤집지 못했다.'}},
+     {l:'사면을 청하는 글을 올린다',act:()=>{P.post.minsim=c100(P.post.minsim+3);return '때마침 내린 사면령에 이름을 넣었다.'}},
+     {l:'전임자의 판결을 존중한다',act:()=>{P.post.minsim=c100(P.post.minsim-2);return '늙은이는 다음 겨울을 넘기지 못했다.'}}],
+ to:()=>'호소문이 서류 더미에 묻혔다.'},
+{id:'o_bandit',w:2,cd:4,when:()=>P.path==='관'&&P.rank>=3&&P.post&&P.post.chian<50,time:7,title:'도적 떼',han:'盜',hr:'도',
+ text:()=>`${P.post.where} 산골에 도적이 들끓어 장사꾼이 다니지 못한다. 치안은 ${P.post.chian}이다.`,
+ ch:[{l:'현위에게 군사를 주어 토벌한다',st:'통',d:50,act:ok=>{if(ok){P.post.chian=c100(P.post.chian+15);P.fame+=5;return '두목의 목이 성문에 걸렸다.'}P.post.chian=c100(P.post.chian-5);return '토벌군이 매복에 걸려 돌아왔다.'}},
+     {l:'항복하면 죄를 묻지 않겠다고 방을 붙인다',st:'매',d:50,act:ok=>{if(ok){P.post.chian=c100(P.post.chian+12);P.post.minsim=c100(P.post.minsim+3);return '도적 수십이 산을 내려와 둔전을 받았다.'}return '아무도 내려오지 않았다.'}},
+     {l:'장정들을 모아 마을마다 지키게 한다',act:()=>{P.post.chian=c100(P.post.chian+6);P.post.minsim=c100(P.post.minsim-2);return '도적은 줄었지만 백성들이 농사철에 일손을 잃었다.'}}],
+ to:()=>{P.post.chian=c100(P.post.chian-6);return '도적이 현성 문 앞까지 와서 노략질했다.'}},
+{id:'u_drill',w:5,cd:3,when:()=>P.path==='군'&&P.rank>=3&&P.post,time:7,title:'조련',han:'練',hr:'련',
+ text:()=>`병력 ${P.post.troops.toLocaleString()}명, 훈련 ${P.post.train}, 사기 ${P.post.morale}. 이번 철 조련을 어떻게 할까.`,
+ ch:[{l:'북과 깃발로 진법을 익힌다',st:'통',d:45,act:ok=>{P.post.train=c100(P.post.train+(ok?8:3));return ok?'북소리 하나에 대오가 한 몸처럼 움직였다.':'대오가 자꾸 엉켰다.'}},
+     {l:'사냥을 겸해 말과 활을 단련한다',act:()=>{P.post.train=c100(P.post.train+5);P.post.morale=c100(P.post.morale+4);P.post.supply=c100(P.post.supply-6);return '병사들이 신이 났다. 군량은 좀 축났다.'}},
+     {l:'병사들을 쉬게 한다',act:()=>{P.post.morale=c100(P.post.morale+8);P.post.train=c100(P.post.train-3);return '병사들이 고향에 편지를 쓰고 빨래를 했다.'}}],
+ to:()=>'조련 계획을 세우지 못하고 한 철이 지나갔다.'},
+{id:'u_desert',w:2,cd:4,when:()=>P.path==='군'&&P.rank>=3&&P.post&&P.post.morale<45,time:6,title:'탈영',han:'逃',hr:'도',
+ text:()=>`사기가 ${P.post.morale}까지 떨어졌다. 밤마다 병사들이 담을 넘는다.`,
+ ch:[{l:'붙잡힌 자를 본보기로 벤다',act:()=>{P.post.morale=c100(P.post.morale-4);P.post.troops=Math.round(P.post.troops*.96);P.s.매-=2;return '탈영은 멎었다. 병사들 눈빛은 더 어두워졌다.'}},
+     {l:'사재를 털어 술과 고기를 낸다',req:()=>P.wealth>=10,rq:'1만 전 필요',act:()=>{P.wealth-=8;P.post.morale=c100(P.post.morale+14);return '병사들이 당신 이름을 부르며 잔을 들었다.'}},
+     {l:'고향 가까운 병사들에게 휴가를 준다',act:()=>{P.post.troops=Math.round(P.post.troops*.9);P.post.morale=c100(P.post.morale+10);return '열에 하나는 돌아오지 않았지만 남은 병사들은 마음을 다잡았다.'}}],
+ to:()=>{P.post.troops=Math.round(P.post.troops*.85);return '한 달 사이 병력의 일 할 넘게 사라졌다.'}},
+{id:'u_reward',w:3,cd:4,when:()=>P.path==='군'&&P.rank>=4&&P.post,time:7,title:'전리품',han:'賞',hr:'상',
+ text:()=>'싸움에서 거둔 비단과 돈이 쌓였다. 위에 바칠지, 병사들에게 나눌지 정해야 한다.',
+ ch:[{l:'모두 주군께 바친다',act:()=>{P.fame+=6;P.post.morale=c100(P.post.morale-5);return '주군이 기뻐했다. 병사들은 수군댔다.'}},
+     {l:'공을 따져 병사들에게 나눈다',act:()=>{P.post.morale=c100(P.post.morale+12);P.fame+=2;return '병사들이 앞다퉈 다음 싸움에 나서겠다고 했다.'}},
+     {l:'몰래 일부를 챙긴다',act:()=>{P.wealth+=15;P.post.morale=c100(P.post.morale-3);later('u_reward_x',rint(1,3),{});return '수레 하나가 장부에서 사라졌다.'}}],
+ to:()=>'결정을 미루는 사이 부장들이 알아서 나눠 가졌다.'},
+{id:'u_reward_x',when:()=>false,time:7,title:'사라진 수레',han:'贓',hr:'장',
+ text:()=>'전리품 수레 하나가 사라진 일을 감군(監軍)이 캐묻는다.',
+ ch:[{l:'부하에게 죄를 씌운다',act:()=>{if(P.post)P.post.morale=c100(P.post.morale-10);P.s.매-=3;return '부하가 곤장을 맞았다. 다른 부하들이 그 장면을 보았다.'}},
+     {l:'챙긴 것을 돌려놓는다',act:()=>{P.wealth=Math.max(0,P.wealth-15);P.fame=Math.max(0,P.fame-4);return '돌려놓았지만 소문은 남았다.'}}],
+ to:()=>{P.fame=Math.max(0,P.fame-8);return '감군의 보고가 위로 올라갔다.'}},
+{id:'u_elite',once:1,w:5,when:()=>P.path==='군'&&P.rank>=5&&P.post&&P.post.train>=80&&P.post.morale>=65,time:7,title:'정예',han:'銳',hr:'예',
+ text:()=>`당신의 군이 정예라는 소문이 났다. 훈련 ${P.post.train}, 사기 ${P.post.morale}. 주군이 열병(閱兵)을 하겠다고 한다.`,
+ ch:[{l:'열병에서 진법을 펼쳐 보인다',st:'통',d:55,act:ok=>{if(ok){hon('정예를 기른 장수',1/30000);P.fame+=10;return '주군이 "이것이 진짜 군대다"라며 무릎을 쳤다.'}P.fame+=3;return '바람에 깃발이 엉켰다. 그래도 칭찬은 받았다.'}},
+     {l:'공을 부장과 병사들에게 돌린다',act:()=>{hon('정예를 기른 장수',1/30000);P.post.morale=c100(P.post.morale+10);P.s.매+=3;return '병사들이 당신을 위해서라면 죽겠다고 했다.'}}],
+ to:()=>'열병 날 비가 와서 취소되었다.'},
+{id:'c_guard',w:4,cd:4,when:()=>P.path==='상'&&P.post&&P.age>=18,time:7,title:'상단 호위',han:'護',hr:'호',
+ text:()=>`먼 길을 떠날 상단을 꾸린다. 거래처 ${P.post.partners}곳, 신용 ${P.post.credit}. 길에는 도적이 많다.`,
+ ch:[{l:'협객들을 호위로 고용한다',req:()=>P.wealth>=10,rq:'1만 전 필요',act:()=>{P.wealth-=6;P.post.partners+=1;P.post.credit=c100(P.post.credit+4);return '무사히 다녀왔다. 새 거래처도 텄다.'}},
+     {l:'호위 없이 지름길로 간다',p:.55,act:ok=>{if(ok){P.wealth+=12;P.post.partners+=1;return '빨리 다녀와 값을 잘 받았다.'}P.wealth=Math.round(P.wealth*.6);P.post.credit=c100(P.post.credit-8);return '도적에게 짐을 다 빼앗겼다. 약속한 물건을 대지 못했다.'}},
+     {l:'가까운 장만 돈다',act:()=>{P.wealth+=3;return '벌이는 적어도 탈은 없었다.'}}],
+ to:()=>'떠날 날을 놓쳤다.'},
+{id:'c_shop',once:1,w:5,when:()=>P.path==='상'&&P.post&&P.wealth>=80&&P.post.shops<3,time:7,title:'새 점포',han:'舖',hr:'포',
+ text:()=>'장터 목 좋은 자리에 점포가 나왔다. 값이 만만치 않다.',
+ ch:[{l:'사들인다',act:()=>{P.wealth-=40;P.post.shops+=1;P.post.credit=c100(P.post.credit+5);return '점포가 하나 늘었다. 장사 수익이 커진다.'}},
+     {l:'세를 얻는다',act:()=>{P.wealth-=10;P.post.shops+=1;return '세를 얻어 점포를 열었다.'}},
+     {l:'지금 점포로 충분하다',act:()=>'돈을 아꼈다.'}],
+ to:()=>'다른 상인이 먼저 계약했다.'},
+{id:'b_suppress',w:1,cd:3,when:()=>P.path==='적'&&P.post&&P.post.heat>=50,time:7,title:'토벌령',han:'討',hr:'토',
+ text:()=>`관아에 토벌령이 붙었다. 산채의 졸개는 ${P.post.men.toLocaleString()}명, 관군의 주목은 ${P.post.heat}이다.`,
+ ch:[{l:'산채를 옮겨 숨는다',act:()=>{P.post.heat=c100(P.post.heat-25);P.post.food=c100(P.post.food-15);P.post.men=Math.round(P.post.men*.9);return '깊은 골짜기로 옮겼다. 몇은 따라오지 않았다.'}},
+     {l:'토벌군을 매복으로 친다',st:'통',d:55,act:ok=>{if(ok){P.post.men=Math.round(P.post.men*1.2)+10;P.fame+=10;P.post.heat=c100(P.post.heat+10);return '관군의 무기를 빼앗아 무리가 불었다.'}P.post.men=Math.round(P.post.men*.6);hurt(25,'토벌군의 화살');return '산채가 불탔다.'}},
+     {l:'관아에 뇌물을 보낸다',req:()=>P.wealth>=15,rq:'1만 5천 전 필요',act:()=>{P.wealth-=12;P.post.heat=c100(P.post.heat-20);return '토벌령이 슬그머니 거두어졌다.'}}],
+ to:()=>{P.post.men=Math.round(P.post.men*.7);hurt(15,'토벌군의 습격');return '토벌군이 산채를 덮쳤다.'}},
+{id:'f_ox',once:1,w:5,when:()=>P.path==='민'&&P.post&&!P.post.ox&&P.wealth>=12&&P.age>=17,time:7,title:'소 한 마리',han:'牛',hr:'우',
+ text:()=>'장날에 쓸 만한 소가 나왔다. 소가 있으면 갈 수 있는 땅이 갑절이다.',
+ ch:[{l:'목돈을 털어 산다',act:()=>{P.wealth-=10;P.post.ox=1;return '소를 끌고 돌아왔다. 아이들이 소 등에 올라탔다.'}},
+     {l:'이웃과 반씩 내서 함께 쓴다',st:'매',d:40,act:ok=>{if(ok){P.wealth-=5;P.post.ox=1;return '이웃과 번갈아 쓰기로 했다.'}return '이웃과 값이 맞지 않았다.'}},
+     {l:'아직은 사람 힘으로 간다',act:()=>'올해도 쟁기를 직접 끌었다.'}],
+ to:()=>'다른 사람이 먼저 사 갔다.'},
+{id:'f_wasteland',w:3,cd:6,when:()=>P.path==='민'&&P.post&&P.age>=18&&P.age<=55,time:7,title:'황무지 개간',han:'墾',hr:'간',
+ text:()=>'전란으로 버려진 밭이 묵어 있다. 개간해 호적에 올리면 몇 해 세금을 면해 준다는 방이 붙었다.',
+ ch:[{l:'식구들과 개간한다',act:()=>{P.post.land+=rint(8,15);hurt(8,'개간');return '손바닥이 다 벗겨졌다. 논밭이 늘었다.'}},
+     {l:'품을 사서 크게 개간한다',req:()=>P.wealth>=20,rq:'2만 전 필요',act:()=>{P.wealth-=15;P.post.land+=rint(20,35);return '일꾼들을 부려 넓은 땅을 일구었다.'}},
+     {l:'주인이 돌아올까 겁나 그만둔다',act:()=>'남의 땅에 손대지 않았다.'}],
+ to:()=>'이웃들이 먼저 차지했다.'},
 ];
 
 /* ===================== 살아 있는 세계: 고을·계절·가족·사람 ===================== */
@@ -3781,24 +3880,123 @@ const FOCUS_W={social:{meet:2.2,npc_meet:2.2,liubei:2,caocao:1.8,sunce:2,longzho
   work_군:{battle:1.8,field:1.8,hero:1.3},work_관:{lawsuit:1.8,riot:1.5,graft:1.6},work_상:{trade:2.2,magnate:2},work_적:{raid:2,bandit_king:1.6},work_민:{drought:1.4,s_autumn:1.5}};
 function focusMul(id){const k=P.focus==='work'||!P.focus?'work_'+P.path:P.focus;return ((FOCUS_W[k]||{})[id])||1;}
 /* 능력치가 높을수록 오르기 어렵다. 50까지는 그대로, 90을 넘으면 거의 오르지 않는다 */
-function softF(v){return v<50?1:v<65?.7:v<75?.45:v<85?.25:v<92?.12:.05;}
-function gain(k,v){P.xp=P.xp||{};v*=softF(P.s[k]);P.xp[k]=(P.xp[k]||0)+v;while(P.xp[k]>=1){P.xp[k]-=1;if(P.s[k]<99)P.s[k]++;}}
+/* 타고난 그릇(P.pot): 능력치마다 숨은 한계가 있고, 그 한계에 가까울수록 덜 오른다 */
+function softF(v,k){if(!P||!P.pot||!k||P.pot[k]==null)return v<50?1:v<65?.7:v<75?.45:v<85?.25:v<92?.12:.05;
+  const room=P.pot[k]-v;return room>=25?1:room>=15?.7:room>=8?.45:room>=3?.25:room>0?.12:.03;}
+function yg(k,d){if(curEv)return;P.yg=P.yg||{};P.yg[k]=(P.yg[k]||0)+d;}
+function gain(k,v){P.xp=P.xp||{};v*=softF(P.s[k],k)*(P.genius&&P.genius.includes(k)?1.8:1);P.xp[k]=(P.xp[k]||0)+v;while(P.xp[k]>=1){P.xp[k]-=1;if(P.s[k]<99){P.s[k]++;yg(k,1);}}}
+function msim(n){P.flags.minsim=(P.flags.minsim||0)+n;if(P.post&&P.post.minsim!=null)P.post.minsim=c100(P.post.minsim+n*8);}
+/* ===================== 직무: 진로마다 맡은 일 ===================== */
+/* 관직: [이름, 하는 일, 녹봉, 관할 단계(0 현청 말단 1 현 부관 2 현 3 군 4 주 5 조정)] 후한서 백관지 기준의 대략 */
+const OFFICE=[['서리','현청의 말단 서기. 공문을 베끼고 장부를 맞춘다.','두식(斗食)',0],['현리','현청의 실무 관리. 세금·호적·송사의 실무를 맡는다.','백석',0],
+ ['현승','현령을 돕는 현의 부관. 창고와 문서를 총괄한다.','이백석',1],['현령','현(縣)의 장관. 호구 1만 안팎을 다스린다. 작은 현의 장은 현장(縣長)이라 했다.','천석',2],
+ ['군승','태수를 보좌하는 군의 부관.','육백석',2],['태수','군(郡)의 장관. 열 남짓한 현과 수십만 백성을 다스린다. 해마다 상계리를 보내 조정에 회계를 보고한다.','이천석',3],
+ ['자사','주(州)를 순찰하며 태수들을 감찰한다. 188년 이후 군권까지 쥔 주목(州牧)이 많아졌다.','육백석(주목은 이천석)',4],['구경','조정의 아홉 장관 가운데 하나.','중이천석',5],
+ ['상서령','상서대의 우두머리. 조서와 정책 문서를 총괄하는 실권자.','천석',5],['승상','조정의 으뜸 재상. 천하의 정사를 총괄한다.','만석',5]];
+/* 군직: [이름, 거느리는 부대, 정원] */
+const MILITARY=[['병졸','오(伍)에 속해 창을 든다.',1],['오장','다섯 명, 오(伍)의 우두머리.',5],['십장','열 명, 십(什)의 우두머리.',10],['둔장','둔(屯) 백여 명을 거느린다.',100],
+ ['군사마','부(部)를 맡는다. 수백 명.',600],['교위','영(營)을 거느린다. 천여 명.',1500],['중랑장','수천을 거느리는 장수.',3500],['편장군','장군 아래의 장수. 수천에서 만.',6000],
+ ['장군','만여 명을 거느린다.',12000],['대장군','천하의 군권을 쥔다.',30000]];
+const POSTLAB={minsim:'민심',chian:'치안',grain:'창고',troops:'병력',train:'훈련',morale:'사기',supply:'군량',credit:'신용',partners:'거래처',shops:'점포',men:'졸개',food:'산채 식량',heat:'관군의 주목',land:'논밭',ox:'소'};
+const POSTNEG={heat:1};
+const c100=v=>Math.max(0,Math.min(100,Math.round(v)));
+function ensurePost(){
+  const p=P.post||{};
+  if(p.path!==P.path){
+    const n={path:P.path,rank:-1};
+    if(P.path==='관')Object.assign(n,{minsim:50,chian:50});
+    if(P.path==='군')Object.assign(n,{troops:1,train:35,morale:55,supply:60});
+    if(P.path==='상')Object.assign(n,{shops:1,partners:1,credit:50});
+    if(P.path==='적')Object.assign(n,{men:8,food:40,heat:10});
+    if(P.path==='민')Object.assign(n,{land:{자작농:30,'지방 호족':120,'명문 사족':80,아전:15,장인:8,상인:10}[P.status]??0,rent:{소작농:20,유민:0}[P.status]??0,ox:['자작농','지방 호족','명문 사족'].includes(P.status)?1:0});
+    if(p.path==='민')n.landOld=p.land;
+    P.post=n;
+  }
+  const q=P.post;
+  if(q.rank!==P.rank){
+    if(P.path==='관'){const o=OFFICE[P.rank];const lv=o[3];
+      if(q.lv!==lv){q.lv=lv;q.where=lv<=2?`${P.gun} 속현`:lv===3?P.gun:lv===4?P.region:'조정';
+        q.hu=lv<=2?rint(5,15)*1000:lv===3?rint(40,150)*1000:lv===4?rint(25,70)*10000:null;q.grain=q.hu?Math.round(q.hu*rint(25,45)/100):null;}}
+    if(P.path==='군'){const cap=MILITARY[P.rank][2];q.cap=cap;if(q.troops<cap*.5||P.rank>q.rank)q.troops=Math.round(cap*(.75+R()*.2));}
+    if(P.path==='적'){q.men=Math.max(q.men,[8,30,150,800][P.rank]);}
+    q.rank=P.rank;
+  }
+}
+function postYear(){
+  if(!P.post||P.age<15)return;const q=P.post,g=P.gun?gunState(P.gun,P.year):{};
+  if(P.path==='관'){q.minsim=c100(q.minsim+(g.harvest==='흉년'?-6:g.harvest==='풍년'?3:0)+(g.war?-8:0)+(50-q.minsim)*.08);
+    q.chian=c100(q.chian+(g.war?-10:2)+(50-q.chian)*.06);
+    if(q.grain!=null)q.grain=Math.max(0,Math.round(q.grain*(g.harvest==='흉년'?.8:1.05)+(g.war?-q.grain*.15:0)));
+    if(q.lv>=2){const fm=Math.round((q.minsim-50)/20);if(fm)P.fame=Math.max(0,P.fame+fm);}}
+  if(P.path==='군'){q.troops=Math.round(q.troops+(q.cap-q.troops)*.35);q.supply=c100(q.supply+(g.war?-12:8)+(g.harvest==='흉년'?-8:0));q.morale=c100(q.morale+(q.supply-60)/10+(55-q.morale)*.2);}
+  if(P.path==='상'){q.credit=c100(q.credit+(55-q.credit)*.05);}
+  if(P.path==='적'){q.heat=c100(q.heat-6);q.food=c100(q.food-8+(g.harvest==='흉년'?-6:0));if(q.food<15){q.men=Math.round(q.men*.85);}}
+}
+function postSeason(f){
+  const q=P.post;if(!q)return;
+  if(P.path==='관'){if(f==='work'){q.minsim=c100(q.minsim+1.2);q.chian=c100(q.chian+1);}}
+  if(P.path==='군'){if(f==='work')q.train=c100(q.train+(100-q.train)*.045);else q.train=c100(q.train-.8);}
+  if(P.path==='상'&&f==='work'&&R()<.06)q.partners=Math.min(20,q.partners+1);
+  if(P.path==='적'&&f==='work'){q.men+=rint(0,3);q.heat=c100(q.heat+2);q.food=c100(q.food+3);}
+}
+function dutyLine(){
+  const q=P.post;if(!q||P.age<15)return '';
+  if(P.path==='관'){const o=OFFICE[P.rank];return `${o[0]} · ${q.where}${q.hu?` · ${q.hu.toLocaleString()}호`:''} · 민심 ${q.minsim} · 치안 ${q.chian}${q.grain!=null?` · 창고 ${q.grain.toLocaleString()}석`:''}`;}
+  if(P.path==='군'){const m=MILITARY[P.rank];return `${m[0]} · 병력 ${q.troops.toLocaleString()}명 · 훈련 ${q.train} · 사기 ${q.morale} · 군량 ${q.supply>=65?'넉넉':q.supply>=35?'보통':'부족'}`;}
+  if(P.path==='상')return `${title()} · 점포 ${q.shops} · 거래처 ${q.partners}곳 · 신용 ${q.credit}`;
+  if(P.path==='적')return `${title()} · 졸개 ${q.men.toLocaleString()}명 · 산채 식량 ${q.food} · 관군의 주목 ${q.heat}`;
+  if(P.path==='민')return `${title()} · 논밭 ${q.land}묘${q.rent?` (소작 ${q.rent}묘)`:''} · 소 ${q.ox}마리 · 식구 ${1+(P.married?1:0)+(P.kids||[]).filter(k=>k.alive).length}명`;
+  return '';
+}
+function dutyDetail(){
+  const q=P.post;if(!q)return '';
+  const row=(k,v,d)=>`<div class="dr"><span>${k}</span><b>${v}</b><em>${d}</em></div>`;
+  if(P.path==='관'){const o=OFFICE[P.rank];
+    return `<p>${esc(o[1])} 녹봉 ${esc(o[2])}.</p>`+row('관할',esc(q.where),q.hu?`호구 약 ${q.hu.toLocaleString()}호`:'천하의 정사')+row('민심',q.minsim,'공무에 힘쓰면 오르고 흉년·전란에 떨어진다. 30 아래면 민란이 잦고, 높으면 해마다 명성이 붙고 승진 자리가 잘 난다.')+row('치안',q.chian,'35 아래면 도적이 들끓는다.')+(q.grain!=null?row('창고',q.grain.toLocaleString()+'석','흉년 구휼과 군량 독촉에 쓰인다.'):'');}
+  if(P.path==='군'){const m=MILITARY[P.rank];
+    return `<p>${esc(m[0])}: ${esc(m[1])}</p>`+row('병력',q.troops.toLocaleString()+'명',`정원 약 ${q.cap.toLocaleString()}명. 싸움에서 잃으면 해마다 조금씩 보충된다.`)+row('훈련',q.train,'군무에 힘쓰면 오른다. 회전에서 힘이 된다.')+row('사기',q.morale,'이기면 오르고 지면 떨어진다. 30 아래면 탈영이 잦다.')+row('군량',q.supply,'전란과 흉년에 줄어든다. 모자라면 사기가 떨어진다.');}
+  if(P.path==='상')return `<p>점포와 거래처가 늘수록, 신용이 높을수록 장사 수익이 커진다.</p>`+row('점포',q.shops,'')+row('거래처',q.partners+'곳','')+row('신용',q.credit,'속이거나 빚을 떼먹으면 떨어진다.');
+  if(P.path==='적')return `<p>무리가 클수록 큰일을 벌일 수 있지만 관군의 눈길도 커진다.</p>`+row('졸개',q.men.toLocaleString()+'명','')+row('산채 식량',q.food,'바닥나면 졸개가 흩어진다.')+row('관군의 주목',q.heat,'60을 넘으면 토벌군이 온다.');
+  if(P.path==='민')return `<p>가을 소출은 논밭 넓이와 소, 그해 풍흉으로 정해진다. 소작한 땅은 소출의 절반을 지주에게 바친다.</p>`+row('논밭',q.land+'묘','제 땅')+row('소작',q.rent+'묘','빌린 땅')+row('소',q.ox+'마리','소가 있으면 소출이 늘어난다.');
+  return '';
+}
+function renderDuty(){
+  const el=$('#duty');if(!el)return;if(!P||!P.alive||P.age<15){el.hidden=true;return;}ensurePost();
+  const line=dutyLine();if(!line){el.hidden=true;return;}el.hidden=false;
+  $('#dutyS').textContent=line;$('#dutyD').innerHTML=dutyDetail();
+}
+function sitMul(id){const q=P.post;if(!q)return 1;
+  if(P.path==='관'){if(id==='riot'&&q.minsim<30)return 3;if(id==='o_bandit'&&q.chian<35)return 3;}
+  if(P.path==='군'&&id==='u_desert'&&q.morale<30)return 3;
+  if(P.path==='적'&&id==='b_suppress'&&q.heat>=60)return 4;return 1;}
+/* 사건 결과로 바뀐 것 */
+function fxOf(s0,sn){
+  const fx=[];if(!s0)return fx;
+  for(const k of SK){const d=Math.round(P.s[k]-s0[k]);if(d)fx.push([`${STK[k]} ${d>0?'+':''}${d}`,d>0]);}
+  if(sn){const dw=Math.round(P.wealth-sn.w);if(dw)fx.push([`재산 ${dw>0?'+':'-'}${money(Math.abs(dw))}`,dw>0]);
+    const df=Math.round(P.fame-sn.f);if(df)fx.push([`명성 ${df>0?'+':''}${df}`,df>0]);
+    const dh=Math.round(P.hp-sn.h);if(dh&&P.hp>0)fx.push([`건강 ${dh>0?'+':''}${dh}`,dh>0]);
+    const po=sn.post||{},pn=P.post||{};if(po.path===pn.path)for(const k in POSTLAB)if(pn[k]!=null&&po[k]!=null){const d=Math.round(pn[k]-po[k]);if(d)fx.push([`${POSTLAB[k]} ${d>0?'+':''}${d.toLocaleString()}`,POSTNEG[k]?d<0:d>0]);}}
+  return fx;
+}
+
 function fg(v){P.fx=(P.fx||0)+v;while(P.fx>=1){P.fx-=1;P.fame++;}}
 function applySeason(){
   if(P.age<15)return;const f=P.focus||'work';P.fc=P.fc||{};P.fc[f]=(P.fc[f]||0)+1;
   const g=P.gun?gunState(P.gun,P.year):{};const farmer=P.path==='민';
   if(f==='work'){
-    if(P.path==='민'){if(P.season===2)P.wealth+=g.harvest==='흉년'?1:g.harvest==='풍년'?6:3;gain('통',.06);}
+    if(P.path==='민'){if(P.season===2){const q=P.post||{},L=Math.max(.6,((q.land||0)+(q.rent||0)*.5)/30*(q.ox?1.25:1));P.wealth+=Math.round((g.harvest==='흉년'?1:g.harvest==='풍년'?6:3)*L);}gain('통',.06);}
     else if(P.path==='군'){fg(.2);gain('통',.18);gain('무',.1);}
     else if(P.path==='관'){fg(.22);gain('정',.2);}
-    else if(P.path==='상'){P.wealth=Math.max(0,P.wealth+Math.round((R()*.09-.025)*Math.max(P.wealth,10)));gain('정',.15);}
-    else if(P.path==='적'){P.wealth+=rint(0,4);fg(.3);if(R()<.06)hurt(rint(5,15),'관군의 화살');}
+    else if(P.path==='상'){const q=P.post||{},cm=q.shops?(1+(q.shops-1)*.25+(q.partners-1)*.04)*(.6+q.credit/125):1;let r=R()*.09-.025;if(r>0)r*=cm;P.wealth=Math.max(0,P.wealth+Math.round(r*Math.max(P.wealth,10)));gain('정',.15);}
+    else if(P.path==='적'){P.wealth+=Math.round(rint(0,4)*Math.min(4,1+((P.post||{}).men||0)/150));fg(.3);if(R()<.06)hurt(rint(5,15),'관군의 화살');}
   }
   else if(f==='arms'){gain('무',.32);gain('통',.14);if(R()<.08)hurt(rint(3,8),'수련 중의 부상');}
   else if(f==='study'){gain('지',.32);gain('정',.16);if(R()<.3)P.wealth=Math.max(0,P.wealth-1);}
   else if(f==='social'){gain('매',.32);if(R()<.5)P.wealth=Math.max(0,P.wealth-1);const ns=(P.npcs||[]).filter(n=>n.alive);if(ns.length&&R()<.25){const x=pick(ns);x.bond=Math.min(5,x.bond+1);}fg(.15);}
   else if(f==='rest'){P.hp=Math.min(maxHp(),P.hp+7);}
   if(farmer&&f!=='work'&&P.season===2)P.wealth+=1;
+  if(!P.away){ensurePost();postSeason(f);}
   const ms={arms:[12,'m_arms'],study:[12,'m_study'],social:[12,'m_social'],work:[16,'m_work']}[f];
   if(ms&&(P.fc[f]===ms[0]||P.fc[f]===ms[0]*3)){P.queue=P.queue||[];P.queue.push({id:P.fc[f]===ms[0]?ms[1]:ms[1]+'2'});}
 }
@@ -3834,11 +4032,15 @@ function newLife(){
   P.traits=[];if(R()<.6)P.traits.push(pick(TRAITS).id);if(R()<.15){const o=TRAITS.filter(x=>!P.traits.includes(x.id));P.traits.push(pick(o).id);}
   P.bonds={};P.seen=[];P.lordFig=null;P.pseed=rint(0,9999);P.season=3;P.evSeason=rint(0,3);P.kids=[];P.queue=[];P.kind=[];P.gun=pick(gunsOf(rg.id))[0];P.county=P.gun;
   if(R()<.004){const L=pick(LEG);Object.assign(P,{legend:L.n,name:L.n,surname:L.s,zi:L.zi,born:L.b,year:L.b,region:L.r,gun:L.g,county:L.g,status:L.st,s:Object.assign({},L.S),traits:L.t.slice(),wealth:STATUS.find(x=>x.id===L.st).w,birthP:1/5.6e7,gifted:null});}
+  P.pot={};for(const k of SK)P.pot[k]=Math.min(92,P.s[k]+rint(12,32));
+  if(P.gifted)P.pot[P.gifted]=99;
+  if(!P.legend&&R()<.012){P.genius=SK.slice().sort(()=>R()-.5).slice(0,3);for(const k of P.genius){P.pot[k]=98;P.s[k]=Math.min(85,P.s[k]+15);}P.birthP*=.012;}
+  if(P.legend)for(const k of SK)P.pot[k]=Math.min(100,P.s[k]+3);
   P.home=P.region+' '+P.gun;
   addLog('','register',{html:registerHTML()});
   P.npcs=[mkNpc('동무',P.born+rint(-2,2)),mkNpc('라이벌',P.born+rint(-1,1))];
   if(P.legend){const z=jo(P.zi,'이/가');addLog(`${P.region} ${P.gun}의 ${P.status} 집안에서 ${jo(P.name,'이/가')} 태어났다. 훗날 ${z.endsWith('가')?P.zi:z}라 불릴 아이다.`,'birth');return;}
-  addLog(`${rg.id} ${P.gun}의 ${st.id} 집안에서 ${jo(P.name,'이/가')} 태어났다.${gifted?` 타고난 ${STK[gifted]}(${STN[gifted]})의 재능이 있다.`:''}${P.traits.length?` 특기: ${P.traits.join(', ')}.`:''}`,'birth');
+  addLog(`${rg.id} ${P.gun}의 ${st.id} 집안에서 ${jo(P.name,'이/가')} 태어났다.${gifted?` 타고난 ${STK[gifted]}(${STN[gifted]})의 재능이 있다.`:''}${P.genius?` 산파가 아이 눈빛을 보고 놀랐다. 남다른 그릇이다.`:''}${P.traits.length?` 특기: ${P.traits.join(', ')}.`:''}`,'birth');
 }
 
 function addLog(t,k,extra){
@@ -3850,6 +4052,7 @@ function drawLog(e){
   if(e.k==='register') body=e.html;
   else if(e.k==='event') body=`<b>${esc(e.title)}</b><span class="pick${e.late?' late':''}">${esc(e.choice)}</span><p>${gl(esc(e.t))}</p>`;
   else body=`<p>${gl(esc(e.t))}</p>`;
+  if(e.fx&&e.fx.length)body+=`<div class="fxl">${e.fx.map(([t,u])=>`<span class="${u?'up':'dn'}">${esc(t)}</span>`).join('')}</div>`;
   li.innerHTML=`<span class="ly">${e.y}<small>${e.a}세${e.s!=null&&e.k!=='birth'&&e.k!=='register'?' '+SEASON[e.s]:''}</small></span><div class="lt">${body}</div>`;
   const log=$('#log');log.appendChild(li);log.scrollTop=log.scrollHeight;
 }
@@ -3903,9 +4106,9 @@ function yearly(){
   if(P.hp<=0)return die2(P.deathCause||'병');
   if(P.age>=1&&P.age<=5&&R()<.003){P.flags.early=1;return die2('어린 날의 돌림병');}
   if(P.age===5)addLog('다섯 살을 넘겼다. 이 시대 아이 셋 중 하나는 이 나이를 넘기지 못했다.','key');
-  if(P.age>=48&&R()<.6)P.s.무=Math.max(1,P.s.무-1);
-  if(P.age>=55&&R()<.4)P.s.통=Math.max(1,P.s.통-1);
-  if(P.age>=65&&R()<.35){const k=pick(['지','정']);P.s[k]=Math.max(1,P.s[k]-1);}
+  if(P.age>=48&&R()<.6&&P.s.무>1){P.s.무--;yg('무',-1);}
+  if(P.age>=55&&R()<.4&&P.s.통>1){P.s.통--;yg('통',-1);}
+  if(P.age>=65&&R()<.35){const k=pick(['지','정']);if(P.s[k]>1){P.s[k]--;yg(k,-1);}}
   if(P.age>=45){
     const p=(P.age-45)*.011+(P.hp<30?.08:0)-(P.wealth>60?.01:0);
     if(R()<p*((P.traits||[]).includes('무병장수')?.6:1)||P.age>=100)return die2(P.age>=58?'천수':'병');
@@ -3915,6 +4118,9 @@ function yearly(){
   P.fameMark=P.fame;
   if(P.lordFig&&['군','관'].includes(P.path)){const f=FIG.find(x=>x.id===P.lordFig);const at=f&&f.at.find(([a,b])=>P.year>=a&&P.year<=b);
     if(at&&at[2]!==P.region){moveTo(at[2]);addLog(`주군 ${jo(P.lordFig,'을/를')} 따라 ${jo(P.region,'로')} 옮겼다.`,'flow');}}
+  if(P.age>=15&&!P.away){ensurePost();postYear();}
+  if(P.yg){const fx=SK.filter(k=>P.yg[k]).map(k=>[`${STK[k]} ${P.yg[k]>0?'+':''}${P.yg[k]}`,P.yg[k]>0]);
+    if(fx.length){const up=fx.some(x=>x[1]),dn=fx.some(x=>!x[1]);addLog([up?`지난 한 해 ${focusLabel(P.focus||'work')}에 힘쓴 보람이 있었다.`:'',dn?'나이가 들어 몸이 예전 같지 않다.':''].filter(Boolean).join(' '),'flow',{fx});}P.yg={};}
   if(!P.away)promote(true);else trackBest();
 }
 /* 출세의 희귀도: 그 자리에 오른 사람이 백성 몇 명 중 한 명꼴인가 (현 약 1,180곳, 군국 약 100곳 기준의 어림값) */
@@ -3940,7 +4146,7 @@ function promote(yearly){
     const nx=P.rank+1,sp=SEATP[P.path];let ok=true;
     if(sp&&sp[nx]!=null){
       if(nx===9&&lordBond()<4){ok=false;if(!P.flags.capNote){P.flags.capNote=1;addLog(`명성은 충분하지만 ${RANKS[P.path][9]}의 자리는 주군의 깊은 신임 없이는 오를 수 없다.`,'flow');}}
-      else if(R()>sp[nx])ok=false;
+      else if(R()>sp[nx]*(P.path==='관'&&P.post&&P.post.path==='관'?(.6+P.post.minsim/125):1))ok=false;
     }
     if(ok){P.rank++;trackBest();addLog(`${jo(fullTitle(),'로')} 올랐다.`,'key');}
   }
@@ -3961,13 +4167,13 @@ function pickEvent(){
   const capped=['군','관'].includes(P.path);
   const pool=EV.filter(e=>!e.prio&&!(capped&&RANKCAP[e.id]!=null&&P.rank>RANKCAP[e.id])&&(e.season==null||e.season===P.season)&&!(e.once&&has(e.id))&&(P.cool[e.id]||0)<=P.year&&e.when());
   if(!pool.length)return null;
-  return wpick(pool,e=>(typeof e.w==='function'?e.w():(e.w||1))*focusMul(e.id));
+  return wpick(pool,e=>(typeof e.w==='function'?e.w():(e.w||1))*focusMul(e.id)*sitMul(e.id));
 }
 
 /* ===================== 사건 화면 ===================== */
 let curChoices=[];
 function showEvent(e){
-  curEv=e;P.tmp._s0=Object.assign({},P.s);P.done.push(e.id);if(!e.prio)P.cool[e.id]=P.year+(e.cd||CD_DEF[e.id]||7);P.tmp._lc=(P.later||[]).length;
+  curEv=e;P.tmp._s0=Object.assign({},P.s);P.tmp._sn={w:P.wealth,f:P.fame,h:P.hp,post:P.post?Object.assign({},P.post):null};P.done.push(e.id);if(!e.prio)P.cool[e.id]=P.year+(e.cd||CD_DEF[e.id]||7);P.tmp._lc=(P.later||[]).length;
   $('#evSeal').innerHTML=`${e.han}<small>${e.hr||HR[e.han]||''}</small>`;$('#evTitle').textContent=e.title;
   $('#evText').innerHTML=gl(esc(e.text()));$('#vs').hidden=true;
   const sy=(e.say||SAY[e.id])?(e.say||SAY[e.id])():null;$('#say').hidden=!sy;
@@ -4024,12 +4230,13 @@ const CD_DEF={battle:2,field:2,sick:5,bandit:5,trade:3,raid:2,conscript:4,lawsui
 const RANKCAP={e_grainskim:3,e_lastwill:3,e_spysuspect:3,e_leave:4,e_warhorse:5,e_deserter:3,e_letters:2,d_chupu:3,conscript:9,
   e_census:4,e_runaway:4,e_concubine:4,e_rainrite:4,e_postfraud:4,e_casebook:4,e_relief:4,e_petition:4,lawsuit:4,graft:4,gov_greedy:4,d_guosuo:4};
 function finishEvent(e,choice,txt,late){
-  const s0=P.tmp._s0;if(s0)for(const k of SK){const d=Math.round(P.s[k]-s0[k]);if(d>0){let add=0;for(let i=0;i<d;i++)if(R()<softF(s0[k]+add))add++;P.s[k]=s0[k]+add;}}
+  const s0=P.tmp._s0;if(s0)for(const k of SK){const d=Math.round(P.s[k]-s0[k]);if(d>0){let add=0;for(let i=0;i<d;i++)if(R()<softF(s0[k]+add,k))add++;P.s[k]=s0[k]+add;}}
   P.tmp._s0=null;
   if(!e.prio&&(P.later||[]).length>(P.tmp._lc||0))P.cool[e.id]=P.year+25;
   for(const k in P.s)P.s[k]=clamp(Math.round(P.s[k]),1,99);
   P.wealth=Math.max(0,Math.round(P.wealth));P.fame=Math.max(0,Math.round(P.fame));
-  addLog(txt,'event',{title:e.title,choice,late,key:true});
+  const fx=fxOf(s0,P.tmp._sn);P.tmp._sn=null;
+  addLog(txt,'event',{title:e.title,choice,late,key:true,fx});
   $('#sheet').hidden=true;
   if(P.hp<=0&&P.alive)die2(P.deathCause||'부상');
   promote();render();
@@ -4042,7 +4249,7 @@ function render(){
   if(!P)return;
   $('#era').innerHTML=`${esc(era())}<small>${P.year}년 ${SEASON[P.season||0]} · ${P.age}세</small>`;
   $('#pop').innerHTML=`천하 호적<b>${pop().toLocaleString()}만</b>`;
-  renderFocus();
+  renderFocus();renderDuty();
   $('#nm').textContent=P.name;setPt($('#mePt'),myPt());
   $('#zi').textContent=P.zi?`자 ${P.zi}`:'';
   const f=ruler();
@@ -4058,7 +4265,8 @@ function render(){
   const mh=maxHp();
   $('#radar').innerHTML=radar(P.s,false);
   const wp=clamp((Math.log10(Math.max(1,P.wealth*1000))-3)/5*100,0,100);
-  const bars=[['體','건강',Math.max(0,Math.round(P.hp)),100,'hp',null],['財','가산',wp,100,'wl',money(P.wealth)]];
+  const th=TH[P.path],nx=th&&th[P.rank+1],fp=nx?clamp((P.fame-th[P.rank])/(nx-th[P.rank])*100,0,100):100;
+  const bars=[['體','건강',Math.max(0,Math.round(P.hp)),100,'hp',null],['財','가산',wp,100,'wl',money(P.wealth)],['名','명성',fp,100,'fm',nx?(P.fame>=nx?`${P.fame} 빈자리 대기`:`${P.fame}/${nx}`):String(P.fame)]];
   $('#stats').innerHTML=bars.map(([h,n,v,m,c,disp])=>`<div class="st ${c}" title="${n}"><div class="lab"><b>${h}<em>${n}</em></b><span>${disp??v}</span></div><div class="meter"><i style="width:${v/m*100}%"></i></div></div>`).join('');
   drawGameMap();
 }
