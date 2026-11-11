@@ -206,7 +206,8 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
 .roll{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:var(--paper);padding:16px}
 .roll-in{width:min(420px,100%);text-align:center}
 .roll-h{font-family:var(--f-ui);font-size:13px;color:var(--ink-soft);margin:0 0 18px;letter-spacing:.05em}
-.roll dl{margin:0;display:grid;gap:10px}
+.roll-map{display:block;width:100%;height:auto;max-height:42vh;object-fit:contain;margin:0 auto 10px;border:1px solid var(--line)}
+.roll dl{margin:0;display:grid;gap:4px}
 .roll .rr{display:grid;grid-template-columns:5em 1fr;align-items:center;border-bottom:1px solid var(--line);padding:8px 4px}
 .roll dt{font-family:var(--f-ui);font-size:12px;color:var(--ink-soft);text-align:left}
 .roll dd{margin:0;font-size:22px;text-align:right;color:var(--ink-soft);opacity:.55;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -312,7 +313,7 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
   </section>
 
   <!-- 게임 화면 -->
-  <div class="roll" id="roll" hidden><div class="roll-in"><p class="roll-h">천하 어딘가에서 한 아이가 태어난다</p><dl id="rollRows"></dl><p class="roll-skip">누르면 건너뜁니다</p></div></div>
+  <div class="roll" id="roll" hidden><div class="roll-in"><p class="roll-h">천하 어딘가에서 한 아이가 태어난다</p><canvas class="roll-map" id="rollMap" width="1032" height="808" aria-hidden="true"></canvas><dl id="rollRows"></dl><p class="roll-skip">누르면 건너뜁니다</p></div></div>
   <section id="game" class="screen" hidden>
     <div class="bar">
       <div class="era" id="era">—</div>
@@ -4394,16 +4395,29 @@ function rollIntro(done){
   const box=$('#roll'),dl=$('#rollRows');let fin=false;const T=[];
   const gift=P.legend?['역사에 이름을 남길 사람',1]:P.genius?['남다른 그릇',1]:P.gifted?[`타고난 ${STK[P.gifted]}`,1]:P.traits.length?[`특기 ${P.traits.join('·')}`,0]:['평범한 아이',0];
   const rows=[['태어난 해',()=>`${rint(155,182)}년`,`${P.born}년`,0],
-    ['고을',()=>{const r=wpick(REGIONS,x=>x.w);return `${r.id} ${wpick(gunsOf(r.id),g=>GUNPOP[g[0]]||1e5)[0]}`;},`${P.region} ${P.gun}`,0],
+    ['고을',()=>jump(),`${P.region} ${P.gun}`,0],
     ['집안',()=>wpick(STATUS,x=>x.p).id,P.status,['명문 사족','한실 종친','지방 호족'].includes(P.status)?1:0],
     ['타고난 것',()=>pick(['평범한 아이','평범한 아이','특기 궁술','특기 언변','특기 기마','타고난 지력','특기 의술','평범한 아이']),gift[0],gift[1]]];
   dl.innerHTML=rows.map(r=>`<div class="rr"><dt>${r[0]}</dt><dd>—</dd></div>`).join('');
   const dds=[...dl.querySelectorAll('dd')];box.hidden=false;
+  /* 지도: 태어난 해의 세력도 위로 점이 고을과 고을 사이를 뛰어다니다 멈춘다 */
+  const cv=$('#rollMap'),cx=cv.getContext('2d'),sc=cv.width/MW,base=document.createElement('canvas');base.width=cv.width;base.height=cv.height;
+  try{drawMap(base,P.born,null,null);}catch(e){}
+  const blood=getComputedStyle(document.documentElement).getPropertyValue('--blood').trim()||'#9a3b2e';
+  const trail=[];
+  const dot=(g,r,a)=>{const G=GUNMAP[g];if(!G)return;const [x,y]=px(G[2],G[3]);cx.globalAlpha=a;cx.fillStyle=blood;cx.beginPath();cx.arc(x*sc,y*sc,r*sc,0,Math.PI*2);cx.fill();cx.globalAlpha=1;};
+  const frame=(g,ring)=>{cx.setTransform(1,0,0,1,0,0);cx.drawImage(base,0,0);
+    trail.forEach((t,k)=>dot(t,4,.12+.5*k/trail.length));
+    if(g){dot(g,7,1);const G=GUNMAP[g];if(G){const [x,y]=px(G[2],G[3]);cx.strokeStyle='#fff';cx.lineWidth=2.5;cx.beginPath();cx.arc(x*sc,y*sc,7*sc,0,Math.PI*2);cx.stroke();
+      if(ring!=null){cx.strokeStyle=blood;cx.lineWidth=3*(1-ring)+1;cx.globalAlpha=1-ring;cx.beginPath();cx.arc(x*sc,y*sc,(9+ring*40)*sc,0,Math.PI*2);cx.stroke();cx.globalAlpha=1;}}}};
+  frame(null);
+  const jump=()=>{const r=wpick(REGIONS,x=>x.w),g=wpick(gunsOf(r.id),g=>GUNPOP[g[0]]||1e5)[0];trail.push(g);if(trail.length>7)trail.shift();frame(g);return `${r.id} ${g}`;};
+  const land=()=>{trail.length=0;const t0=performance.now();const an=()=>{if(fin)return;const k=(performance.now()-t0)/900;frame(P.gun,k%1);if(k<2.6)requestAnimationFrame(an);else frame(P.gun);};an();};
   const end=()=>{if(fin)return;fin=true;T.forEach(clearTimeout);box.hidden=true;box.onclick=null;done();};
   box.onclick=end;
-  rows.forEach((r,i)=>{const stop=700+i*650;let t=0;
-    const spin=()=>{if(fin)return;if(t>=stop){dds[i].textContent=r[2];dds[i].className='hit'+(r[3]?' rare':'');if(i===rows.length-1)T.push(setTimeout(end,r[3]?1600:1100));return;}
-      dds[i].textContent=r[1]();const gap=t<stop-400?45:t<stop-150?90:160;t+=gap;T.push(setTimeout(spin,gap));};
+  rows.forEach((r,i)=>{const stop=[700,2200,2900,3600][i];let t=0;
+    const spin=()=>{if(fin)return;if(t>=stop){dds[i].textContent=r[2];dds[i].className='hit'+(r[3]?' rare':'');if(i===1)land();if(i===rows.length-1)T.push(setTimeout(end,r[3]?1600:1100));return;}
+      dds[i].textContent=r[1]();const gap=i===1?(t<stop-900?110:t<stop-400?190:300):(t<stop-400?45:t<stop-150?90:160);t+=gap;T.push(setTimeout(spin,gap));};
     spin();});
 }
 /* 이름 짓기: 이름 없는 백성으로 태어났을 때만. 시간은 멈춰 있다 */
