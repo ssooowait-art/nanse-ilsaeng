@@ -128,6 +128,7 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
 .radar .rv{fill:var(--bronze);fill-opacity:.22;stroke:var(--bronze);stroke-width:1.5;stroke-linejoin:round}
 .radar .rl{font-family:var(--f-ui);font-size:13px;fill:var(--ink-soft)}
 .radar .rhj{font-family:var(--f-disp);fill:var(--ink)}
+.radar .rstar{fill:var(--bronze);font-size:9px;letter-spacing:-1px}
 .radar .rnum{fill:var(--ink);font-weight:700}
 .card-radar{width:100%;max-width:340px;margin:0 auto}
 .pt{flex:none;display:block;background-image:url(portraits.webp?v=742f2970);background-size:1200% 1100%;background-color:var(--paper-2);border:1px solid var(--line);border-radius:3px}
@@ -435,7 +436,24 @@ const ZI1=['자','중','백','숙','원','문','공','덕','현','경','계','�
 const ZI2=['명','룡','덕','달','화','휴','강','연','순','공','명','량','승','칙'];
 const KIDN=['평','흥','소','안','영','강','수','통','의','관','희','선','유','준','홍'];
 const TRAITS=[{id:'궁술',st:'무',b:10,d:'무력 판정 +10'},{id:'기마',st:'통',b:10,d:'통솔 판정 +10'},{id:'책략',st:'지',b:10,d:'지략 판정 +10'},
-  {id:'언변',st:'매',b:10,d:'매력 판정 +10'},{id:'치세',st:'정',b:10,d:'정치 판정 +10'},{id:'강운',d:'운 판정 확률 +10%p'},{id:'무병장수',d:'노쇠로 죽을 확률 40% 감소'},{id:'의술',d:'열병·역병 피해 절반'}];
+  {id:'언변',st:'매',b:10,d:'매력 판정 +10'},{id:'치세',st:'정',b:10,d:'정치 판정 +10'},{id:'강운',d:'운 판정 확률 +10%p'},{id:'무병장수',d:'노쇠로 죽을 확률 40% 감소'},{id:'의술',d:'열병·역병 피해 절반'},
+  {id:'진법',st:'통',b:10,d:'통솔 판정 +10. 통솔 70에 이르러 얻는다'},
+  {id:'만인적',st:'무',b:15,d:'무력 판정 +15. 무력 85에 이르러 얻는다. 정사에서 관우·장비를 두고 쓴 말'},{id:'명장',st:'통',b:15,d:'통솔 판정 +15. 통솔 85에 이르러 얻는다'},
+  {id:'신산',st:'지',b:15,d:'지력 판정 +15. 지력 85에 이르러 얻는다'},{id:'왕좌지재',st:'정',b:15,d:'정치 판정 +15. 정치 85에 이르러 얻는다. 순욱을 두고 쓴 말'},{id:'인망',st:'매',b:15,d:'매력 판정 +15. 매력 85에 이르러 얻는다'}];
+/* 재능: 능력치마다 성장 배율과 한계가 정해진다 */
+const TAL=[{n:'범재',m:1,cap:82,p:.7},{n:'수재',m:1.2,cap:88,p:.2},{n:'준재',m:1.5,cap:93,p:.08},{n:'영재',m:2,cap:97,p:.0195},{n:'천재',m:3,cap:99,p:.0005}];
+const TR70={통:'진법',지:'책략',정:'치세',매:'언변'},TR85={무:'만인적',통:'명장',지:'신산',정:'왕좌지재',매:'인망'};
+function talM(k){return P&&P.tal&&P.tal[k]!=null?TAL[P.tal[k]].m:1;}
+function talLine(){const xs=SK.filter(k=>P.tal[k]>=2).sort((a,b)=>P.tal[b]-P.tal[a]);return xs.length?` ${xs.map(k=>`${STK[k]}에 ${TAL[P.tal[k]].n}`).join(', ')}의 재능을 타고났다.${xs.some(k=>P.tal[k]===4)?' 산파가 아이를 받아 들고 한참 말이 없었다.':''}`:'';}
+function checkTraits(silent){if(!P||!P.traits)return;
+  const say=t=>jo(t,'이/가').endsWith('이')?t+'이라':t+'라';
+  for(const k of SK){
+    let t=P.s[k]>=85?TR85[k]:null;
+    if(t&&!P.traits.includes(t)){P.traits.push(t);if(!silent)addLog(`${jo(STK[k],'이/가')} ${P.s[k]}에 이르렀다. 사람들이 ${say(t)} 일컫는다.`,'key');}
+    if(P.s[k]>=70){t=k==='무'?(P.traits.includes('궁술')||P.traits.includes('기마')?null:['량주','병주','유주'].includes(P.region)?'기마':'궁술'):TR70[k];
+      if(t&&!P.traits.includes(t)){P.traits.push(t);if(!silent)addLog(`${jo(STK[k],'이/가')} ${P.s[k]}에 이르러 몸에 익은 것이 있다. 특기 ${jo(t,'을/를')} 얻었다.`,'key');}}
+  }}
+
 const TR=Object.fromEntries(TRAITS.map(t=>[t.id,t]));
 const COUNTY={유주:['탁현','계현','어양'],기주:['업현','거록','신도'],청주:['임치','북해','제남'],연주:['진류','견성','복양'],예주:['초현','여남','영천'],
   서주:['하비','팽성','낭야'],사례:['낙양','장안','하내'],병주:['진양','상당'],량주:['고장','무위','천수'],형주:['양양','강릉','장사','남양'],
@@ -855,7 +873,7 @@ function radar(s,full){
   g+=SK.map((_,i)=>{const [x,y]=pt(i,R0);return `<line class="rg" x1="0" y1="0" x2="${f(x)}" y2="${f(y)}"/>`}).join('');
   g+=`<polygon class="rv" points="${SK.map((k,i)=>pt(i,R0*s[k]/100).map(f).join(',')).join(' ')}"/>`;
   g+=SK.map((k,i)=>{const [x,y]=pt(i,R0+9);const anc=Math.abs(x)<4?'middle':x>0?'start':'end';const dy=y<-30?-3:y>20?10:4;
-    return `<text class="rl" x="${f(x)}" y="${f(y+dy)}" text-anchor="${anc}">${full?`<tspan class="rhj">${STN[k]}</tspan> `:''}${STK[k]} <tspan class="rnum">${s[k]}</tspan></text>`}).join('');
+    return `<text class="rl" x="${f(x)}" y="${f(y+dy)}" text-anchor="${anc}">${full?`<tspan class="rhj">${STN[k]}</tspan> `:''}${STK[k]} <tspan class="rnum">${s[k]}</tspan>${P&&P.tal&&P.tal[k]?`<tspan class="rstar" dx="2">${'★'.repeat(P.tal[k])}</tspan>`:''}</text>`}).join('');
   return `<svg class="radar" viewBox="${full?'-118 -70 236 130':'-96 -70 192 130'}" role="img" aria-label="능력치 ${SK.map(k=>STK[k]+' '+s[k]).join(', ')}">${g}</svg>`;
 }
 function registerHTML(){
@@ -3969,7 +3987,7 @@ function focusMul(id){const k=P.focus==='work'||!P.focus?'work_'+P.path:P.focus;
 function softF(v,k){if(!P||!P.pot||!k||P.pot[k]==null)return v<50?1:v<65?.7:v<75?.45:v<85?.25:v<92?.12:.05;
   const room=P.pot[k]-v;return room>=25?1:room>=15?.7:room>=8?.45:room>=3?.25:room>0?.12:.03;}
 function yg(k,d){if(curEv)return;P.yg=P.yg||{};P.yg[k]=(P.yg[k]||0)+d;}
-function gain(k,v){P.xp=P.xp||{};v*=softF(P.s[k],k)*(P.genius&&P.genius.includes(k)?1.8:1);P.xp[k]=(P.xp[k]||0)+v;while(P.xp[k]>=1){P.xp[k]-=1;if(P.s[k]<99){P.s[k]++;yg(k,1);}}}
+function gain(k,v){P.xp=P.xp||{};v*=softF(P.s[k],k)*talM(k);P.xp[k]=(P.xp[k]||0)+v;while(P.xp[k]>=1){P.xp[k]-=1;if(P.s[k]<99){P.s[k]++;yg(k,1);}}}
 function msim(n){P.flags.minsim=(P.flags.minsim||0)+n;if(P.post&&P.post.minsim!=null)P.post.minsim=c100(P.post.minsim+n*8);}
 /* ===================== 직무: 진로마다 맡은 일 ===================== */
 /* 관직: [이름, 하는 일, 녹봉, 관할 단계(0 현청 말단 1 현 부관 2 현 3 군 4 주 5 조정)] 후한서 백관지 기준의 대략 */
@@ -4111,24 +4129,25 @@ function newLife(){
   const s={};SK.forEach(k=>s[k]=r3());
   for(const k in st.b)s[k]+=st.b[k];
   let birthP=st.p, gifted=null;
-  if(R()<.02){gifted=pick(SK);s[gifted]=Math.min(99,s[gifted]+30);birthP*=.02;}
+  const tal={};for(const k of SK){let r=R(),i=0;while(i<TAL.length-1&&r>=TAL[i].p){r-=TAL[i].p;i++;}tal[k]=i;s[k]+=[0,3,7,12,20][i];if(i>=3)birthP*=TAL[i].p;}
+  const gi=SK.reduce((a,k)=>tal[k]>tal[a]?k:a,SK[0]);if(tal[gi]>=2)gifted=gi;
   for(const k in s)s[k]=clamp(s[k],1,99);
   const surname=st.id==='한실 종친'?'유':pick(SURN);
   P={surname,name:surname+given(surname),zi:null,born,year:born,age:0,region:rg.id,status:st.id,s,hp:100,wealth:st.w,fame:st.id==='명문 사족'?6:0,
-     path:'민',rank:0,married:0,children:[],flags:{},done:[],cool:{},log:[],alive:true,birthP,luck:1,deathCause:null,tmp:{},gifted};
-  P.traits=[];if(R()<.6)P.traits.push(pick(TRAITS).id);if(R()<.15){const o=TRAITS.filter(x=>!P.traits.includes(x.id));P.traits.push(pick(o).id);}
+     path:'민',rank:0,married:0,children:[],flags:{},done:[],cool:{},log:[],alive:true,birthP,luck:1,deathCause:null,tmp:{},gifted,tal};
+  P.traits=[];if(R()<.3)P.traits.push(pick(['강운','무병장수','의술']));
   P.bonds={};P.seen=[];P.lordFig=null;P.pseed=rint(0,9999);P.season=3;P.evSeason=rint(0,3);P.kids=[];P.queue=[];P.kind=[];P.gun=wpick(gunsOf(rg.id),g=>GUNPOP[g[0]]||1e5)[0];P.county=P.gun;
   if(R()<.004){const L=pick(LEG);Object.assign(P,{legend:L.n,name:L.n,surname:L.s,zi:L.zi,born:L.b,year:L.b,region:L.r,gun:L.g,county:L.g,status:L.st,s:Object.assign({},L.S),traits:L.t.slice(),wealth:STATUS.find(x=>x.id===L.st).w,birthP:1/5.6e7,gifted:null});}
-  P.pot={};for(const k of SK)P.pot[k]=Math.min(92,P.s[k]+rint(12,32));
-  if(P.gifted)P.pot[P.gifted]=99;
-  if(!P.legend&&R()<.012){P.genius=SK.slice().sort(()=>R()-.5).slice(0,3);for(const k of P.genius){P.pot[k]=98;P.s[k]=Math.min(85,P.s[k]+15);}P.birthP*=.012;}
-  if(P.legend)for(const k of SK)P.pot[k]=Math.min(100,P.s[k]+3);
+  if(P.legend){P.tal={};P.gifted=null;for(const k of SK){const v=P.s[k];P.tal[k]=v>=95?4:v>=88?3:v>=78?2:v>=65?1:0;}}
+  for(const k of SK)P.s[k]=clamp(P.s[k],1,99);
+  P.pot={};for(const k of SK){const i=P.tal[k];P.pot[k]=P.legend?Math.min(100,P.s[k]+3):Math.min(TAL[i].cap,Math.max(P.s[k]+8,P.s[k]+rint(12,32)+i*8));}
+  checkTraits(true);
   if(P.status==='노비')P.flags.nobi=1;
   P.home=P.region+' '+P.gun;
   addLog('','register',{html:registerHTML()});
   P.npcs=[mkNpc('동무',P.born+rint(-2,2)),mkNpc('라이벌',P.born+rint(-1,1))];
   if(P.legend){const z=jo(P.zi,'이/가');addLog(`${P.region} ${P.gun}의 ${P.status} 집안에서 ${jo(P.name,'이/가')} 태어났다. 훗날 ${z.endsWith('가')?P.zi:z}라 불릴 아이다.`,'birth');return;}
-  addLog(`${rg.id} ${P.gun}의 ${st.id} 집안에서 ${jo(P.name,'이/가')} 태어났다.${gifted?` 타고난 ${STK[gifted]}(${STN[gifted]})의 재능이 있다.`:''}${P.genius?` 산파가 아이 눈빛을 보고 놀랐다. 남다른 그릇이다.`:''}${P.traits.length?` 특기: ${P.traits.join(', ')}.`:''}`,'birth');
+  addLog(`${rg.id} ${P.gun}의 ${st.id} 집안에서 ${jo(P.name,'이/가')} 태어났다.${talLine()}${P.traits.length?` 특기: ${P.traits.join(', ')}.`:''}`,'birth');
 }
 
 function addLog(t,k,extra){
@@ -4217,6 +4236,7 @@ function yearly(){
   if(P.age>=15&&!P.away){ensurePost();postYear();}
   if(P.yg){const fx=SK.filter(k=>P.yg[k]).map(k=>[`${STK[k]} ${P.yg[k]>0?'+':''}${P.yg[k]}`,P.yg[k]>0]);
     if(fx.length){const up=fx.some(x=>x[1]),dn=fx.some(x=>!x[1]);addLog([up?`지난 한 해 ${focusLabel(P.focus||'work')}에 힘쓴 보람이 있었다.`:'',dn?'나이가 들어 몸이 예전 같지 않다.':''].filter(Boolean).join(' '),'flow',{fx});}P.yg={};}
+  checkTraits();
   if(!P.away)promote(true);else trackBest();
 }
 /* 출세의 희귀도: 그 자리에 오른 사람이 백성 몇 명 중 한 명꼴인가 (현 약 1,180곳, 군국 약 100곳 기준의 어림값) */
@@ -4326,10 +4346,11 @@ const CD_DEF={battle:2,field:2,sick:5,bandit:5,trade:3,raid:2,conscript:4,lawsui
 const RANKCAP={e_grainskim:3,e_lastwill:3,e_spysuspect:3,e_leave:4,e_warhorse:5,e_deserter:3,e_letters:2,d_chupu:3,conscript:9,
   e_census:4,e_runaway:4,e_concubine:4,e_rainrite:4,e_postfraud:4,e_casebook:4,e_relief:4,e_petition:4,lawsuit:4,graft:4,gov_greedy:4,d_guosuo:4};
 function finishEvent(e,choice,txt,late){
-  const s0=P.tmp._s0;if(s0)for(const k of SK){const d=Math.round(P.s[k]-s0[k]);if(d>0){let add=0;for(let i=0;i<d;i++)if(R()<softF(s0[k]+add,k))add++;P.s[k]=s0[k]+add;}}
+  const s0=P.tmp._s0;if(s0)for(const k of SK){const d=Math.round(P.s[k]-s0[k]);if(d>0){const w=d*talM(k),n=Math.floor(w)+(R()<w%1?1:0);let add=0;for(let i=0;i<n;i++)if(R()<softF(s0[k]+add,k))add++;P.s[k]=Math.min(99,s0[k]+add);}}
   P.tmp._s0=null;
   if(!e.prio&&(P.later||[]).length>(P.tmp._lc||0))P.cool[e.id]=P.year+25;
   for(const k in P.s)P.s[k]=clamp(Math.round(P.s[k]),1,99);
+  checkTraits();
   P.wealth=Math.max(0,Math.round(P.wealth));P.fame=Math.max(0,Math.round(P.fame));
   const fx=fxOf(s0,P.tmp._sn);P.tmp._sn=null;
   addLog(txt,'event',{title:e.title,choice,late,key:true,fx});
@@ -4442,11 +4463,11 @@ function start(){
 /* 출생 슬롯: 해·고을·집안·타고난 것이 차례로 멈춘다 */
 function rollIntro(done){
   const box=$('#roll'),dl=$('#rollRows');let fin=false;const T=[];
-  const gift=P.legend?['역사에 이름을 남길 사람',1]:P.genius?['남다른 그릇',1]:P.gifted?[`타고난 ${STK[P.gifted]}`,1]:P.traits.length?[`특기 ${P.traits.join('·')}`,0]:['평범한 아이',0];
+  const bk=SK.reduce((a,k)=>P.tal[k]>P.tal[a]?k:a,SK[0]),bi=P.tal[bk];const gift=P.legend?['역사에 이름을 남길 사람',1]:bi>=1?[`${STK[bk]} ${TAL[bi].n}`,bi>=3?1:0]:P.traits.length?[`특기 ${P.traits.join('·')}`,0]:['평범한 아이',0];
   const rows=[['태어난 해',()=>`${rint(155,182)}년`,`${P.born}년`,0],
     ['고을',()=>jump(),`${P.region} ${P.gun}`,0],
     ['집안',()=>wpick(STATUS,x=>x.p).id,P.status,['명문 사족','한실 종친','지방 호족'].includes(P.status)?1:0],
-    ['타고난 것',()=>pick(['평범한 아이','평범한 아이','특기 궁술','특기 언변','특기 기마','타고난 지력','특기 의술','평범한 아이']),gift[0],gift[1]]];
+    ['타고난 것',()=>{const i=wpick([0,1,2,3,4],j=>[.3,.35,.22,.1,.03][j]);return i?`${STK[pick(SK)]} ${TAL[i].n}`:'평범한 아이';},gift[0],gift[1]]];
   dl.innerHTML=rows.map(r=>`<div class="rr"><dt>${r[0]}</dt><dd>—</dd></div>`).join('');
   const dds=[...dl.querySelectorAll('dd')];box.hidden=false;
   /* 지도: 태어난 해의 세력도 위로 점이 고을과 고을 사이를 뛰어다니다 멈춘다 */
