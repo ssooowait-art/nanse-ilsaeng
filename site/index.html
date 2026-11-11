@@ -274,9 +274,17 @@ button:focus-visible{outline:2px solid var(--bronze);outline-offset:2px}
 .toast{font-family:var(--f-ui);font-size:13px;color:var(--bronze)}
 
 @media (max-width:440px){
-  .profile .stats{grid-template-columns:1fr}
   .stats{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-  .st .lab{font-size:11px}
+  .st .lab{font-size:10.5px}
+  .profile .stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .st .lab b em{display:none}
+  .prof-l{width:min(38%,170px)}
+  .profile{gap:8px}
+  .prof-r{gap:6px}
+  .pt-me{width:44px;height:44px}
+  .who .nm{font-size:20px}
+  .chips{gap:4px;font-size:11px}
+  .chip{padding:0 6px}
   .chron li{grid-template-columns:52px minmax(0,1fr);gap:10px}
   .hero{gap:14px}
   .bar{gap:6px}
@@ -4189,9 +4197,9 @@ function yearly(){
   else P.hp=Math.min(mh,P.hp+(P.age<40?8:4));
   if(P.hp>mh)P.hp=mh;
   if(P.hp<=0)return die2(P.deathCause||'병');
-  if(EPI[P.year]&&P.age>=1){const pr=EPI[P.year]*(gunTier(P.gun)==='big'?1.3:gunTier(P.gun)==='small'?.7:1)*(P.age<6?2:P.age>55?1.8:1)*((P.traits||[]).includes('의술')?.5:1)*(P.wealth>60?.6:1);
+  if(EPI[P.year]&&P.age>=3){const pr=EPI[P.year]*(gunTier(P.gun)==='big'?1.3:gunTier(P.gun)==='small'?.7:1)*(P.age<6?2:P.age>55?1.8:1)*((P.traits||[]).includes('의술')?.5:1)*(P.wealth>60?.6:1);
     if(R()<pr){P.flags.early=P.age<6?1:P.flags.early;return die2(P.age<6?'어린 날의 돌림병':'역병');}}
-  if(P.age>=1&&P.age<=5&&R()<.005){P.flags.early=1;return die2('어린 날의 돌림병');}
+  if(P.age>=1&&P.age<=5&&R()<(P.age<3?.005:.002)){P.flags.early=1;return die2('어린 날의 돌림병');}
   if(P.age===5)addLog('다섯 살을 넘겼다. 이 시대 아이 셋 중 하나는 이 나이를 넘기지 못했다.','key');
   if(P.age>=48&&R()<.6&&P.s.무>1){P.s.무--;yg('무',-1);}
   if(P.age>=55&&R()<.4&&P.s.통>1){P.s.통--;yg('통',-1);}
@@ -4354,7 +4362,7 @@ function render(){
   $('#radar').innerHTML=radar(P.s,false);
   const wp=clamp((Math.log10(Math.max(1,P.wealth*1000))-3)/5*100,0,100);
   const th=TH[P.path],nx=th&&th[P.rank+1],fp=nx?clamp((P.fame-th[P.rank])/(nx-th[P.rank])*100,0,100):100;
-  const bars=[['體','건강',Math.max(0,Math.round(P.hp)),100,'hp',null],['財','가산',wp,100,'wl',money(P.wealth)],['名','명성',fp,100,'fm',nx?(P.fame>=nx?`${P.fame} 빈자리 대기`:`${P.fame}/${nx}`):String(P.fame)]];
+  const bars=[['體','건강',Math.max(0,Math.round(P.hp)),100,'hp',null],['財','가산',wp,100,'wl',money(P.wealth)],['名','명성',fp,100,'fm',nx?(P.fame>=nx?`${P.fame} 대기`:`${P.fame}/${nx}`):String(P.fame)]];
   $('#stats').innerHTML=bars.map(([h,n,v,m,c,disp])=>`<div class="st ${c}" title="${n}"><div class="lab"><b>${h}<em>${n}</em></b><span>${disp??v}</span></div><div class="meter"><i style="width:${v/m*100}%"></i></div></div>`).join('');
   drawGameMap();
 }
