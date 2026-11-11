@@ -4331,7 +4331,7 @@ function promote(yearly){
     const nx=P.rank+1,sp=SEATP[P.path];let ok=true;
     if(sp&&sp[nx]!=null){
       if(nx===9&&lordBond()<4){ok=false;if(!P.flags.capNote){P.flags.capNote=1;addLog(`명성은 충분하지만 ${RANKS[P.path][9]}의 자리는 주군의 깊은 신임 없이는 오를 수 없다.`,'flow');}}
-      else if(R()>Math.min(.9,sp[nx]*(1+2*Math.max(0,P.fame-th[nx])/th[nx])+.04*(P.waitY||0)+.03*lordBond())*(P.path==='관'&&P.post&&P.post.path==='관'?(.6+P.post.minsim/125)*(gunTier(P.gun)==='big'?.85:gunTier(P.gun)==='small'?1.1:1):1))ok=false;
+      else if(R()>Math.min(.9,Math.max(sp[nx]*(1+3*Math.max(0,P.fame-th[nx])/th[nx]),P.fame>=th[nx]*1.5?.5:0)+.06*(P.waitY||0)+.03*lordBond())*(P.path==='관'&&P.post&&P.post.path==='관'?(.6+P.post.minsim/125)*(gunTier(P.gun)==='big'?.85:gunTier(P.gun)==='small'?1.1:1):1))ok=false;
     }
     if(ok){P.rank++;P.waitY=0;trackBest();addLog(`${jo(fullTitle(),'로')} 올랐다.`,'key');}
     else if(nx!==9||lordBond()>=4){P.waitY=(P.waitY||0)+1;if(P.waitY===3)addLog(`공은 차고 넘치나 ${RANKS[P.path][nx]} 자리가 비지 않는다. 기다리는 해가 길어질수록 차례가 가까워진다.`,'flow');}
